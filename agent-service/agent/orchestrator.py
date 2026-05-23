@@ -72,6 +72,8 @@ TOOLS = [
     },
 ]
 
+HABIT_MARKER = "HÁBITO_SUGERIDO:"
+
 SYSTEM_PROMPT = """Eres Kairós, un copiloto de bienestar digital. Tu rol es ayudar a las personas a entender sus patrones de uso digital y acompañarlas hacia mayor bienestar.
 
 REGLAS CRÍTICAS:
@@ -81,7 +83,10 @@ REGLAS CRÍTICAS:
 4. Compara siempre contra el historial propio del usuario, nunca contra otros.
 5. Usa un tono cálido, sin juicios, compasivo.
 6. Respuestas concisas: máximo 3-4 párrafos.
-7. Habla siempre en español."""
+7. Habla siempre en español.
+8. Si sugieres un hábito específico, añade al final de tu respuesta exactamente esta línea:
+HÁBITO_SUGERIDO: <nombre del hábito, máximo 5 palabras>
+Esta línea no la ve el usuario — es solo para el sistema. No la incluyas si no sugieres un hábito concreto."""
 
 
 def _execute_tool(tool_name: str, tool_input: dict) -> str:
@@ -156,10 +161,21 @@ def chat(user_id: str, message: str) -> dict:
             final_text = choice.message.content or ""
             break
 
+    suggested_habit = None
+    if HABIT_MARKER in final_text:
+        lines = final_text.split("\n")
+        for line in lines:
+            stripped = line.strip()
+            if stripped.startswith(HABIT_MARKER):
+                raw = stripped[len(HABIT_MARKER):].strip()
+                suggested_habit = raw[:60] if raw else None
+                final_text = final_text.replace(line, "").strip()
+                break
+
     mem.add_message(user_id, "assistant", final_text)
 
     return {
         "reply": final_text,
         "playbook_activated": triage_result.get("playbook_slug"),
-        "suggested_habit": None,
+        "suggested_habit": suggested_habit,
     }
