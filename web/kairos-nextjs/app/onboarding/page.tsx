@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, ArrowLeft, Sparkles, Check } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { submitSurvey } from "@/lib/api";
 
 const PHQ9: string[] = [
   "Poco interés o placer en hacer las cosas",
@@ -113,7 +114,15 @@ export default function OnboardingPage() {
           </div>
 
           <button
-            onClick={() => router.push("/dashboard")}
+            onClick={async () => {
+              try {
+                await submitSurvey("phq9", phqAnswers.map((v) => v ?? 0));
+                await submitSurvey("gad7", gadAnswers.map((v) => v ?? 0));
+              } catch {
+                // non-blocking — proceed to dashboard regardless
+              }
+              router.push("/dashboard");
+            }}
             className="group mt-8 inline-flex items-center justify-center gap-2 rounded-md bg-gradient-cta px-8 py-3.5 font-bold text-bg-deep shadow-glow-green transition-transform hover:scale-[1.02]"
           >
             Ir a tu Dashboard
