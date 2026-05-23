@@ -21,6 +21,7 @@ def test_gap_one_day_increments_streak_without_grace_day():
     result = calculate_streak_update(streak, date(2026, 5, 21))
 
     assert result["current_streak"] == 4
+    assert result["message"] == "¡4 días seguidos! Sigue así 💪"
     assert result["used_grace_day"] is False
     assert result["broken"] is False
     assert result["grace_days_used"] == 0
@@ -71,3 +72,32 @@ def test_longest_streak_updated_when_current_exceeds_record():
 
     assert result["current_streak"] == 10
     assert result["longest_streak"] == 10
+
+
+def test_first_completion_sets_streak_to_one_with_start_message():
+    streak = _base_streak(
+        current_streak=0,
+        longest_streak=0,
+        last_completion=None,
+    )
+
+    result = calculate_streak_update(streak, date(2026, 5, 21))
+
+    assert result["current_streak"] == 1
+    assert result["longest_streak"] == 1
+    assert result["message"] == "¡Primer día! El camino empieza aquí."
+    assert result["broken"] is False
+    assert result["used_grace_day"] is False
+    assert result["last_completion"] == date(2026, 5, 21)
+
+
+def test_gap_zero_does_not_break_streak():
+    streak = _base_streak(current_streak=5, last_completion=date(2026, 5, 21))
+
+    result = calculate_streak_update(streak, date(2026, 5, 21))
+
+    assert result["current_streak"] == 5
+    assert result["broken"] is False
+    assert result["used_grace_day"] is False
+    assert result["message"] == "Ya registraste este hábito hoy."
+    assert result["last_completion"] == date(2026, 5, 21)

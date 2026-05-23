@@ -105,10 +105,6 @@ def _persist_streak(habit_id: str, user_id: str, update: dict, *, exists: bool) 
 async def complete_habit(habit_id: str, user_id: str = Depends(get_current_user)):
     today = date.today()
 
-    supabase.table("habit_completions").insert(
-        {"habit_id": habit_id, "user_id": user_id}
-    ).execute()
-
     streak_res = (
         supabase.table("streaks").select("*").eq("habit_id", habit_id).execute()
     )
@@ -118,6 +114,7 @@ async def complete_habit(habit_id: str, user_id: str = Depends(get_current_user)
         if streak_state["last_completion"] == today:
             return {
                 "streak": streak_state["current_streak"],
+                "message": "Ya registraste este hábito hoy.",
                 "used_grace_day": False,
                 "broken": False,
             }
@@ -130,6 +127,10 @@ async def complete_habit(habit_id: str, user_id: str = Depends(get_current_user)
             "grace_days_allowed": DEFAULT_GRACE_DAYS_ALLOWED,
         }
 
+    supabase.table("habit_completions").insert(
+        {"habit_id": habit_id, "user_id": user_id}
+    ).execute()
+
     update = calculate_streak_update(streak_state, today)
     _persist_streak(
         habit_id,
@@ -140,6 +141,7 @@ async def complete_habit(habit_id: str, user_id: str = Depends(get_current_user)
 
     return {
         "streak": update["current_streak"],
+        "message": update["message"],
         "used_grace_day": update["used_grace_day"],
         "broken": update["broken"],
     }
