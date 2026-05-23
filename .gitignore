@@ -13,3 +13,10 @@ build/
 .DS_Store
 *.log
 .claude/
+
+# ML models — solo van scripts de entrenamiento, no binarios
+data/models/*.joblib
+data/models/*.pkl
+
+# Datos sintéticos generados localmente
+data/synthetic/*.csv
