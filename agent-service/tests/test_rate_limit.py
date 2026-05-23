@@ -35,16 +35,18 @@ def _make_jwt(sub: str) -> str:
 @pytest.fixture
 def client():
     """App con dependencias pesadas stubeadas y limiter reinicializado."""
-    # Evitar que un test previo deje módulos parciales cacheados.
-    for mod in ["main", "routers.chat"]:
-        sys.modules.pop(mod, None)
+    # Limpiar módulos que se recargarán frescos para aislar el contador de slowapi
+    # y las referencias al handler de chat entre tests.
+    for mod in list(sys.modules.keys()):
+        if mod in ("main", "routers", "routers.chat", "rate_limit"):
+            sys.modules.pop(mod, None)
 
-    # Recargar rate_limit + main para que el contador in-memory de slowapi
-    # arranque limpio en cada test
+    # Recargar rate_limit para que el contador in-memory de slowapi arranque limpio
     import rate_limit
     importlib.reload(rate_limit)
+
+    # Importar main fresco (routers.chat también se reimportará en cascada)
     import main as main_mod
-    importlib.reload(main_mod)
 
     mock_db = MagicMock()
 

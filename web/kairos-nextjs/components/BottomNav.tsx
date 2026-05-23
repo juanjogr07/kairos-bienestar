@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, MessageCircle, Zap, User } from "lucide-react";
+import { BarChart3, MessageCircle, Zap, User, Sparkles } from "lucide-react";
 
 const tabs = [
   { href: "/dashboard", label: "Dashboard", Icon: BarChart3 },
   { href: "/chat", label: "Chat", Icon: MessageCircle },
   { href: "/habits", label: "Hábitos", Icon: Zap },
+  { href: "/report", label: "Reporte", Icon: Sparkles },
   { href: "/profile", label: "Perfil", Icon: User },
 ];
 
