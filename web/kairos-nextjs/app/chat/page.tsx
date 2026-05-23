@@ -9,19 +9,17 @@ import {
   AlertTriangle,
   Sparkles,
   Plus,
-  Check,
 } from "lucide-react";
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
-import { sendAgentMessage, addSuggestedHabit, getAgentHistory } from "@/lib/agent";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
+import { AuthSpinner } from "@/components/AuthSpinner";
 
 interface Msg {
   id: string;
   from: "me" | "kairos";
   text: string;
   showSuggestion?: boolean;
-  suggestedHabit?: string;
 }
 
 const QUICK_REPLIES = [
@@ -59,57 +57,33 @@ export default function ChatPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    getAgentHistory().then((history) => {
-      if (history.length === 0) return;
-      setMessages(history.map((h) => ({
-        id: h.id,
-        from: h.role === "user" ? "me" : "kairos",
-        text: h.content,
-      })));
-    });
-  }, []);
-
-  useEffect(() => {
     scrollRef.current?.scrollTo({
       top: scrollRef.current.scrollHeight,
       behavior: "smooth",
     });
   }, [messages, typing]);
 
-  const handleSend = async (text?: string) => {
+  const handleSend = (text?: string) => {
     const value = (text ?? input).trim();
-    if (!value || typing) return;
+    if (!value) return;
     const id = String(Date.now());
     setMessages((m) => [...m, { id, from: "me", text: value }]);
     setInput("");
     setTyping(true);
-    try {
-      const res = await sendAgentMessage(value);
+    setTimeout(() => {
+      setTyping(false);
       setMessages((m) => [
         ...m,
         {
           id: id + "-r",
           from: "kairos",
-          text: res.reply,
-          showSuggestion: !!res.suggested_habit,
-          suggestedHabit: res.suggested_habit ?? undefined,
+          text: "Entiendo. Vamos a ir paso a paso. ¿Te parece si empezamos por dejar el teléfono fuera del cuarto a partir de las 22:30 esta noche?",
         },
       ]);
-    } catch (err: unknown) {
-      const code = err instanceof Error ? err.message : "";
-      const errorText =
-        code === "SERVICE_UNAVAILABLE"
-          ? "El copiloto está temporalmente fuera de servicio. Intenta en unos minutos."
-          : code === "RATE_LIMITED"
-          ? "Has alcanzado el límite de conversaciones por hora. Vuelve pronto."
-          : "Hubo un error al conectar con Kairós. Verifica tu conexión.";
-      setMessages((m) => [...m, { id: id + "-err", from: "kairos", text: errorText }]);
-    } finally {
-      setTyping(false);
-    }
+    }, 1400);
   };
 
-  if (checking) return <div className="flex h-screen items-center justify-center"><span className="h-6 w-6 animate-spin rounded-full border-2 border-accent-secondary border-t-transparent" /></div>;
+  if (checking) return <AuthSpinner />;
 
   return (
     <>
@@ -211,16 +185,12 @@ export default function ChatPage() {
 
 function Bubble({ msg }: { msg: Msg }) {
   const isMe = msg.from === "me";
-  const [habitAdded, setHabitAdded] = useState(false);
-
-  async function handleAddHabit() {
-    if (!msg.suggestedHabit) return;
-    setHabitAdded(true);
-    await addSuggestedHabit(msg.suggestedHabit);
-  }
-
   return (
-    <div className={`flex animate-fade-up ${isMe ? "justify-end" : "justify-start"}`}>
+    <div
+      className={`flex animate-fade-up ${
+        isMe ? "justify-end" : "justify-start"
+      }`}
+    >
       <div
         className={`max-w-[85%] rounded-lg px-4 py-3 text-base leading-relaxed ${
           isMe
@@ -240,20 +210,9 @@ function Bubble({ msg }: { msg: Msg }) {
         <p>{msg.text}</p>
 
         {msg.showSuggestion && (
-          <button
-            onClick={handleAddHabit}
-            disabled={habitAdded}
-            className={`group mt-3 flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-bold transition-colors ${
-              habitAdded
-                ? "border-accent-primary/40 bg-[rgba(79,255,176,0.12)] text-accent-primary cursor-default"
-                : "border-accent-primary bg-[rgba(79,255,176,0.08)] text-accent-primary hover:bg-[rgba(79,255,176,0.15)]"
-            }`}
-          >
-            {habitAdded ? (
-              <><Check size={14} strokeWidth={2.5} /> Hábito agregado</>
-            ) : (
-              <><Plus size={14} strokeWidth={2.5} /> Agregar hábito sugerido</>
-            )}
+          <button className="group mt-3 flex items-center gap-2 rounded-md border border-accent-primary bg-[rgba(79,255,176,0.08)] px-3 py-2 text-xs font-bold text-accent-primary transition-colors hover:bg-[rgba(79,255,176,0.15)]">
+            <Plus size={14} strokeWidth={2.5} />
+            Agregar hábito sugerido
           </button>
         )}
       </div>

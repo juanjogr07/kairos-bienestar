@@ -1,9 +1,12 @@
 # US-AI-002 — El agente sugiere hábitos concretos al finalizar el chat
 
+> ✅ **IMPLEMENTADO** — Mergeado en `dev` (PR #2, commit `5a08fab`). Ver plan maestro: `docs/plans/2026-05-23-implementacion-pendiente.md`
+
 **Asignado a:** AI Engineer  
 **Prioridad:** Alta  
 **Estimación:** 2 puntos  
-**Rama:** `feat/ai/US-AI-002-suggested-habit`
+**Rama:** `feat/ai/US-AI-002-suggested-habit`  
+**Estado:** ✅ Mergeado en `dev`
 
 ---
 
@@ -41,10 +44,10 @@ class ChatResponse(BaseModel):
 
 ## Criterios de aceptación
 
-- [ ] Si la respuesta del agente incluye una sugerencia de hábito, `suggested_habit` contiene el nombre del hábito (string corto, máx 60 chars)
-- [ ] Si no hay sugerencia, `suggested_habit` es `None`
-- [ ] El hábito sugerido usa el mismo lenguaje que aparece en el texto de respuesta
-- [ ] No rompe el contrato existente de `ChatResponse`
+- [x] Si la respuesta del agente incluye una sugerencia de hábito, `suggested_habit` contiene el nombre del hábito (string corto, máx 60 chars)
+- [x] Si no hay sugerencia, `suggested_habit` es `None`
+- [x] El hábito sugerido usa el mismo lenguaje que aparece en el texto de respuesta
+- [x] No rompe el contrato existente de `ChatResponse`
 
 ---
 
@@ -80,7 +83,7 @@ if HABIT_MARKER in final_text:
 
 ## Definition of Done
 
-- [ ] `suggested_habit` retorna string cuando el agente sugiere un hábito
-- [ ] El marcador `HÁBITO_SUGERIDO:` no aparece en `reply` (se extrae y elimina)
-- [ ] Test con mock que verifica extracción correcta
-- [ ] PR → `dev`
+- [x] `suggested_habit` retorna string cuando el agente sugiere un hábito
+- [x] El marcador `HÁBITO_SUGERIDO:` no aparece en `reply` (se extrae y elimina)
+- [x] Test con mock que verifica extracción correcta
+- [x] PR → `dev` (PR #2)

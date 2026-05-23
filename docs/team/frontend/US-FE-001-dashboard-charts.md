@@ -1,9 +1,12 @@
 # US-FE-001 — Dashboard con gráfico de uso semanal
 
+> ⚠️ **PARCIAL** — `web/kairos-nextjs/app/dashboard/page.tsx` en `dev` tiene gráfico de barras por sitio con colores, pero usa datos mock (hardcoded). Falta conectar con `GET /api/v1/dashboard/weekly-usage` (ya disponible). Ver plan maestro: `docs/plans/2026-05-23-implementacion-pendiente.md`
+
 **Asignado a:** Frontend  
 **Prioridad:** Alta  
 **Estimación:** 3 puntos  
-**Rama:** `feat/fe/US-FE-001-dashboard-charts`
+**Rama:** `feat/fe/US-FE-001-dashboard-charts`  
+**Estado:** ⚠️ UI completa con mock data — pendiente conectar API
 
 ---
 
@@ -36,7 +39,7 @@ El endpoint `GET /api/v1/dashboard` retorna hoy. Para la semana necesitarás lla
 
 ## Criterios de aceptación
 
-- [ ] Gráfico de barras visible en `/dashboard` debajo de las 4 cards
+- [ ] Gráfico de barras visible en `/dashboard` debajo de las 4 cards — **PENDIENTE: componente no existe**
 - [ ] Muestra 7 días con minutos por día (eje X: lunes-domingo, eje Y: minutos)
 - [ ] Barras coloreadas: verde ≤ 60 min, amarillo 61-120 min, rojo > 120 min
 - [ ] En mobile (390px): gráfico horizontal scrolleable o reducido legible
@@ -94,7 +97,7 @@ export const mockWeeklyUsage = [
 
 ## Definition of Done
 
-- [ ] Gráfico visible en `/dashboard`
+- [ ] Gráfico visible en `/dashboard` — **PENDIENTE: instalar recharts y crear weekly-chart.tsx**
 - [ ] Responsive en mobile
 - [ ] Sin errores en consola
-- [ ] PR → `dev`
+- [ ] PR → `dev` (primero mergear la rama `juancamilovergara55/kai-5-setup-web-app` como base)

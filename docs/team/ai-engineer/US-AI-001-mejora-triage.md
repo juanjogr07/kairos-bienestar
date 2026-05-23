@@ -1,9 +1,12 @@
 # US-AI-001 — Mejora del árbol de triaje con contexto temporal
 
+> ✅ **IMPLEMENTADO** — Mergeado en `dev` (PR #1, commit `fe1ef30`). Ver plan maestro: `docs/plans/2026-05-23-implementacion-pendiente.md`
+
 **Asignado a:** AI Engineer  
 **Prioridad:** Alta  
 **Estimación:** 3 puntos  
-**Rama:** `feat/ai/US-AI-001-triage-temporal`
+**Rama:** `feat/ai/US-AI-001-triage-temporal`  
+**Estado:** ✅ Mergeado en `dev`
 
 ---
 
@@ -35,11 +38,11 @@ La mejora: si el score bajó ≥ 3 puntos respecto a la semana anterior, el nive
 
 ## Criterios de aceptación
 
-- [ ] Si PHQ-9 actual < PHQ-9 de hace 7 días - 3, el nivel es `improving` aunque esté en rango `mood`
-- [ ] Si PHQ-9 > 15 (crisis), el nivel es siempre `crisis` sin excepción (tendencia no aplica)
-- [ ] `get_survey_scores` retorna `{"phq9_score": int, "phq9_prev_score": int | None, ...}`
-- [ ] 2 tests nuevos: `test_improving_trend` y `test_crisis_ignores_trend`
-- [ ] `pytest tests/ -v` — todos en verde
+- [x] Si PHQ-9 actual < PHQ-9 de hace 7 días - 3, el nivel es `improving` aunque esté en rango `mood`
+- [x] Si PHQ-9 > 15 (crisis), el nivel es siempre `crisis` sin excepción (tendencia no aplica)
+- [x] `get_survey_scores` retorna `{"phq9_score": int, "phq9_prev_score": int | None, ...}`
+- [x] 2 tests nuevos: `test_improving_trend` y `test_crisis_ignores_trend`
+- [x] `pytest tests/ -v` — todos en verde
 
 ---
 
@@ -76,7 +79,7 @@ phq9_prev = prev_res.data[0]["total_score"] if prev_res.data else None
 
 ## Definition of Done
 
-- [ ] Código en rama `feat/ai/US-AI-001-triage-temporal`
-- [ ] Tests pasando (`pytest tests/ -v`)
-- [ ] PR abierto hacia `dev` con descripción del cambio
-- [ ] Notificar a AI-Engineer lead si el nivel `improving` necesita un playbook nuevo (coordinar con Backend-2-Data)
+- [x] Código en rama `feat/ai/US-AI-001-triage-temporal`
+- [x] Tests pasando (`pytest tests/ -v`)
+- [x] PR mergeado en `dev` (PR #1)
+- [x] Nivel `improving` activa playbook `momentum-builder` (pendiente crear el archivo md del playbook — ver Fase 0)

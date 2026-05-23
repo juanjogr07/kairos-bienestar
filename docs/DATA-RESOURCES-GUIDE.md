@@ -1,4 +1,4 @@
-# Kairós — Guía de Recursos de Datos
+># Kairós — Guía de Recursos de Datos
 
 > Documento de referencia: **qué cargar, dónde conseguirlo, dónde colocarlo y cómo nombrarlo.**  
 > Cada recurso tiene un campo **Quién lo usa** para saber qué Dev es responsable de cargarlo.

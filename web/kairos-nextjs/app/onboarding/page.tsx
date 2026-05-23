@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, ArrowLeft, Sparkles, Check } from "lucide-react";
 import { Logo } from "@/components/Logo";
-import { submitSurvey } from "@/lib/api";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
+import { AuthSpinner } from "@/components/AuthSpinner";
 
 const PHQ9: string[] = [
   "Poco interés o placer en hacer las cosas",
@@ -47,6 +48,7 @@ export default function OnboardingPage() {
     Array(7).fill(null)
   );
   const router = useRouter();
+  const { checking } = useRequireAuth();
 
   const questions = phase === "phq9" ? PHQ9 : GAD7;
   const answers = phase === "phq9" ? phqAnswers : gadAnswers;
@@ -57,6 +59,8 @@ export default function OnboardingPage() {
     phase === "phq9"
       ? "En las últimas 2 semanas, ¿con qué frecuencia te has sentido afectado/a por…"
       : "En las últimas 2 semanas, ¿con qué frecuencia te has sentido afectado/a por…";
+
+  if (checking) return <AuthSpinner />;
 
   if (phase === "complete") {
     const phqScore = phqAnswers.reduce<number>((s, v) => s + (v ?? 0), 0);
@@ -114,15 +118,7 @@ export default function OnboardingPage() {
           </div>
 
           <button
-            onClick={async () => {
-              try {
-                await submitSurvey("phq9", phqAnswers.map((v) => v ?? 0));
-                await submitSurvey("gad7", gadAnswers.map((v) => v ?? 0));
-              } catch {
-                // non-blocking — proceed to dashboard regardless
-              }
-              router.push("/dashboard");
-            }}
+            onClick={() => router.push("/dashboard")}
             className="group mt-8 inline-flex items-center justify-center gap-2 rounded-md bg-gradient-cta px-8 py-3.5 font-bold text-bg-deep shadow-glow-green transition-transform hover:scale-[1.02]"
           >
             Ir a tu Dashboard
