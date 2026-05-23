@@ -1,15 +1,5 @@
 -- 002_performance_indices.sql
 -- Performance indexes para queries frecuentes de Kairós
---
--- Aplicar fuera de transacción (SQL Editor o psql autocommit):
--- CREATE INDEX CONCURRENTLY no puede ejecutarse dentro de un bloque transaccional.
---
--- Rollback:
--- DROP INDEX IF EXISTS idx_usage_events_user_timestamp;
--- DROP INDEX IF EXISTS idx_usage_events_user_domain;
--- DROP INDEX IF EXISTS idx_survey_responses_user_type_date;
--- DROP INDEX IF EXISTS idx_ml_results_user_model_date;
--- DROP INDEX IF EXISTS idx_habit_completions_user_date;
 
 -- usage_events: queries por usuario + rango de tiempo (dashboard, ML features)
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_usage_events_user_timestamp
@@ -30,3 +20,10 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_ml_results_user_model_date
 -- habit_completions: completados hoy (dashboard)
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_habit_completions_user_date
   ON habit_completions (user_id, completed_at DESC);
+
+-- Rollback:
+-- DROP INDEX IF EXISTS idx_usage_events_user_timestamp;
+-- DROP INDEX IF EXISTS idx_usage_events_user_domain;
+-- DROP INDEX IF EXISTS idx_survey_responses_user_type_date;
+-- DROP INDEX IF EXISTS idx_ml_results_user_model_date;
+-- DROP INDEX IF EXISTS idx_habit_completions_user_date;
