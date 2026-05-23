@@ -75,6 +75,15 @@ TOOLS = [
 
 HABIT_MARKER = "HÁBITO_SUGERIDO:"
 
+CRISIS_RESPONSE = """Noto que estás atravesando un momento muy difícil.
+Gracias por confiar en mí, y quiero asegurarme de que recibas el apoyo adecuado.
+
+📞 **Línea 106 — Salud mental**
+Gratuita · Confidencial · Disponible 24 horas
+Llama ahora si necesitas hablar con alguien.
+
+Estoy aquí para acompañarte, pero en este momento lo más importante es que te conectes con un profesional."""
+
 WEEKLY_REPORT_PROMPT = """Genera un reporte semanal de bienestar digital en formato Markdown.
 Usa PRIMERO get_usage_summary (days=7), get_survey_scores y get_ml_scores para recopilar los datos antes de redactar.
 
@@ -131,6 +140,16 @@ def _execute_tool(tool_name: str, tool_input: dict) -> str:
 
 def chat(user_id: str, message: str) -> dict:
     triage_result = run_triage(user_id)
+
+    # GUARDRAIL — executes before LLM, cannot be bypassed by prompt or history
+    if triage_result["level"] == "crisis":
+        mem.add_message(user_id, "user", message)
+        mem.add_message(user_id, "assistant", CRISIS_RESPONSE)
+        return {
+            "reply": CRISIS_RESPONSE,
+            "playbook_activated": "crisis-escalation",
+            "suggested_habit": None,
+        }
 
     triage_context = (
         f"\n\nCONTEXTO DE TRIAJE:\n"
