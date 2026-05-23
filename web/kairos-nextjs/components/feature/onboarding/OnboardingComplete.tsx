@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
 import { Button, Card, CardBody } from "@heroui/react";
 
 import { severityFromScore } from "@/components/shared/ScoreBadge";
@@ -36,9 +36,25 @@ export function OnboardingComplete({
           Listo, Alejandro.
         </h1>
         <p className="mt-3 text-base leading-relaxed text-text-secondary">
-          Gracias por compartir tu momento actual. Voy a estar acompañándote con
-          datos vivos y sugerencias suaves. Sin juicios.
+          Completaste los 4 bloques. Voy a estar acompañándote con datos
+          vivos y sugerencias suaves, basadas en lo que me contaste. Sin
+          juicios.
         </p>
+
+        <ul
+          className="mt-6 flex flex-wrap justify-center gap-2"
+          aria-label="Bloques completados"
+        >
+          {["PHQ-9", "GAD-7", "Hábitos", "Pantalla"].map((label) => (
+            <li
+              key={label}
+              className="inline-flex items-center gap-1 rounded-full border border-accent-primary/30 bg-accent-primary/10 px-3 py-1 text-xs font-medium text-accent-primary"
+            >
+              <CheckCircle2 size={12} strokeWidth={2.5} />
+              {label}
+            </li>
+          ))}
+        </ul>
 
         <div className="mt-8 grid grid-cols-2 gap-3">
           <Card

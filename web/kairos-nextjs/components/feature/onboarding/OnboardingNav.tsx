@@ -9,6 +9,12 @@ interface OnboardingNavProps {
   canContinue: boolean;
   onBack: () => void;
   onNext: () => void;
+  /**
+   * Si está presente, se muestra un link sutil "Omitir" entre los botones
+   * Atrás y Siguiente. Lo usa el flujo de onboarding para permitir abandonar
+   * desde dentro de cualquier bloque (intro/mapa tienen su propio botón).
+   */
+  onSkip?: () => void;
 }
 
 export function OnboardingNav({
@@ -17,6 +23,7 @@ export function OnboardingNav({
   canContinue,
   onBack,
   onNext,
+  onSkip,
 }: OnboardingNavProps) {
   return (
     <footer className="sticky bottom-0 z-10 border-t border-border-subtle bg-bg-deep/80 px-5 py-4 backdrop-blur-md md:px-8">
@@ -33,6 +40,18 @@ export function OnboardingNav({
           Atrás
         </Button>
 
+        {onSkip && (
+          <Button
+            onPress={onSkip}
+            variant="light"
+            radius="md"
+            size="sm"
+            className="hidden text-text-muted data-[hover=true]:text-text-secondary md:flex"
+          >
+            Omitir por ahora
+          </Button>
+        )}
+
         <Button
           onPress={onNext}
           isDisabled={!canContinue}
@@ -48,6 +67,19 @@ export function OnboardingNav({
           {isFinal ? "Finalizar" : "Siguiente"}
         </Button>
       </div>
+      {onSkip && (
+        <div className="mt-2 flex justify-center md:hidden">
+          <Button
+            onPress={onSkip}
+            variant="light"
+            radius="md"
+            size="sm"
+            className="text-text-muted data-[hover=true]:text-text-secondary"
+          >
+            Omitir por ahora
+          </Button>
+        </div>
+      )}
     </footer>
   );
 }

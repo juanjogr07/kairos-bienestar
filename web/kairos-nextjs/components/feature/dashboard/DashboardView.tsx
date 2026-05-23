@@ -4,6 +4,7 @@ import { useState } from "react";
 import { BarChart3, Zap } from "lucide-react";
 
 import { AppShell } from "@/components/shared/AppShell";
+import { OnboardingIncompleteBanner } from "@/components/feature/onboarding";
 
 import { GreetingHeader } from "./GreetingHeader";
 import { MetricCard } from "./MetricCard";
@@ -37,6 +38,8 @@ export function DashboardView() {
 
   return (
     <AppShell>
+      <OnboardingIncompleteBanner />
+
       <GreetingHeader name="Alejandro" screenTime="1h 42min" />
 
       <section
