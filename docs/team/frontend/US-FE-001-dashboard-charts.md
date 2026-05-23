@@ -1,12 +1,12 @@
 # US-FE-001 — Dashboard con gráfico de uso semanal
 
-> ⚠️ **PARCIAL — pendiente merge a dev** — Dashboard base existe en rama `juancamilovergara55/kai-5-setup-web-app` pero sin el gráfico recharts. El gráfico semanal (`weekly-chart.tsx`) aún no existe. Ver plan maestro: `docs/plans/2026-05-23-implementacion-pendiente.md`
+> ⚠️ **PARCIAL** — `web/kairos-nextjs/app/dashboard/page.tsx` en `dev` tiene gráfico de barras por sitio con colores, pero usa datos mock (hardcoded). Falta conectar con `GET /api/v1/dashboard/weekly-usage` (ya disponible). Ver plan maestro: `docs/plans/2026-05-23-implementacion-pendiente.md`
 
 **Asignado a:** Frontend  
 **Prioridad:** Alta  
 **Estimación:** 3 puntos  
 **Rama:** `feat/fe/US-FE-001-dashboard-charts`  
-**Estado:** ⚠️ Dashboard base en `juancamilovergara55/kai-5-setup-web-app` — gráfico semanal pendiente
+**Estado:** ⚠️ UI completa con mock data — pendiente conectar API
 
 ---
 

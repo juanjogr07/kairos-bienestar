@@ -1,12 +1,12 @@
 # US-API-003 — Rate limiting en la API
 
-> ⚠️ **IMPLEMENTADO — pendiente merge a dev** — Código listo en rama `feature/apiconections`. Necesita PR hacia `dev`. Ver plan maestro: `docs/plans/2026-05-23-implementacion-pendiente.md`
+> ✅ **IMPLEMENTADO** — Mergeado en `dev` vía `main` (commit `59fb318`). Ver plan maestro: `docs/plans/2026-05-23-implementacion-pendiente.md`
 
 **Asignado a:** API & Connections  
 **Prioridad:** Media  
 **Estimación:** 3 puntos  
-**Rama:** `feat/api/US-API-003-rate-limiting`  
-**Estado:** ⚠️ Código en `feature/apiconections` — abrir PR hacia `dev`
+**Rama:** `feature/apiconections`  
+**Estado:** ✅ Mergeado en `dev`
 
 ---
 
@@ -73,5 +73,5 @@ async def chat_endpoint(request: Request, body: ChatRequest, user_id: str = Depe
 
 - [x] Rate limiting activo en `/chat` (slowapi en `agent-service/rate_limit.py`)
 - [x] Respuesta 429 con mensaje en español
-- [ ] Health check excluido — verificar al mergear
-- [ ] **ACCIÓN REQUERIDA:** Abrir PR desde `feature/apiconections` → `dev` (resolver conflicto en `routers/chat.py`)
+- [x] Mergeado en `dev`
+- [ ] Verificar que health check `GET /health` no cuenta para el límite

@@ -1,8 +1,10 @@
 # Kairós — Índice de historias de usuario por persona
 
-> **Última actualización:** 2026-05-23 | **Estado global:** ~55% → ver [plan maestro](../plans/2026-05-23-implementacion-pendiente.md)
+> **Última actualización:** 2026-05-23 (post-merge audit) | **Estado global:** ~65% → ver [plan maestro](../plans/2026-05-23-implementacion-pendiente.md)
 > 
-> Leyenda: ✅ Mergeado en `dev` · ⚠️ Listo, pendiente merge · ❌ No iniciado
+> Leyenda: ✅ Completo en `dev` · ⚠️ Parcial/en progreso · ❌ No iniciado
+> 
+> **`dev` está sincronizado con `main`, rama ML y rama web-setup.**
 
 ## Estrategia de ramas (todos)
 
@@ -43,26 +45,26 @@ exp/<id>         ← experimentos ML (solo Backend-1)
 
 ---
 
-## 🔌 API & Connections — `api-service/routers/` · `extension/src/` · `web/middleware.ts`
+## 🔌 API & Connections — `api-service/routers/` · `extension/src/`
 
-> Las 3 stories están implementadas en la rama `feature/apiconections`. **ACCIÓN REQUERIDA:** abrir PR hacia `dev` (hay conflicto en `routers/chat.py` que resolver).
+> Las 3 stories ya están en `dev` (mergeadas desde `feature/apiconections` vía `main`).
 
 | ID | Historia | Prioridad | Estado | Rama |
 |---|---|---|---|---|
-| US-API-001 | [Endpoint de uso semanal](api-connections/US-API-001-weekly-usage-endpoint.md) | Alta | ⚠️ Listo, pendiente merge | `feature/apiconections` |
-| US-API-002 | [Retry con backoff en extensión](api-connections/US-API-002-extension-retry.md) | Alta | ⚠️ Listo, pendiente merge | `feature/apiconections` |
-| US-API-003 | [Rate limiting en el agente](api-connections/US-API-003-rate-limiting.md) | Media | ⚠️ Listo, pendiente merge | `feature/apiconections` |
+| US-API-001 | [Endpoint de uso semanal](api-connections/US-API-001-weekly-usage-endpoint.md) | Alta | ✅ en `dev` | `feature/apiconections` → `main` |
+| US-API-002 | [Retry con backoff en extensión](api-connections/US-API-002-extension-retry.md) | Alta | ✅ en `dev` | `feature/apiconections` → `main` |
+| US-API-003 | [Rate limiting en el agente](api-connections/US-API-003-rate-limiting.md) | Media | ✅ en `dev` | `feature/apiconections` → `main` |
 
 ---
 
 ## ⚙️ Backend 1 (ML) — `api-service/services/ml/` · `ml-worker/` · `data/`
 
-> ⚠️ **Directorio `ml-worker/` no existe.** Estas stories deben crear el servicio desde cero.
+> ⚠️ `ml-worker/` existe con scaffolding básico (KAI-49). Los modelos reales (Isolation Forest, XGBoost) aún no están implementados.
 
 | ID | Historia | Prioridad | Estado | Rama |
 |---|---|---|---|---|
-| US-ML-001 | [Pipeline Isolation Forest](backend-1-ml/US-ML-001-isolation-forest.md) | Alta | ❌ No iniciada | `feat/ml/US-ML-001-isolation-forest` |
-| US-ML-002 | [XGBoost predictor de ánimo](backend-1-ml/US-ML-002-xgboost-mood.md) | Media | ❌ No iniciada (depende de ML-001) | `feat/ml/US-ML-002-xgboost-mood` |
+| US-ML-001 | [Pipeline Isolation Forest](backend-1-ml/US-ML-001-isolation-forest.md) | Alta | ❌ Solo scaffolding | `feat/ml/US-ML-001-isolation-forest` |
+| US-ML-002 | [XGBoost predictor de ánimo](backend-1-ml/US-ML-002-xgboost-mood.md) | Media | ❌ Solo scaffolding (depende de ML-001) | `feat/ml/US-ML-002-xgboost-mood` |
 
 ---
 
@@ -70,9 +72,9 @@ exp/<id>         ← experimentos ML (solo Backend-1)
 
 | ID | Historia | Prioridad | Estado | Rama |
 |---|---|---|---|---|
-| US-DATA-001 | [Streaks con grace days](backend-2-data/US-DATA-001-streak-logic.md) | Alta | ❓ Estado desconocido | `feat/data/US-DATA-001-streak-logic` |
-| US-DATA-002 | [Índices de performance](backend-2-data/US-DATA-002-indices-performance.md) | Media | ❓ Estado desconocido | `mig/002-performance-indices` |
-| US-DATA-003 | [Tabla de notificaciones](backend-2-data/US-DATA-003-notifications-table.md) | Baja | ❓ Estado desconocido | `feat/data/US-DATA-003-notifications` |
+| US-DATA-001 | [Streaks con grace days](backend-2-data/US-DATA-001-streak-logic.md) | Alta | ✅ en `dev` — `streak_engine.py` con grace days | `api-service/services/` |
+| US-DATA-002 | [Índices de performance](backend-2-data/US-DATA-002-indices-performance.md) | Media | ❌ No iniciada | `mig/002-performance-indices` |
+| US-DATA-003 | [Tabla de notificaciones](backend-2-data/US-DATA-003-notifications-table.md) | Baja | ❌ No iniciada | `feat/data/US-DATA-003-notifications` |
 
 ---
 

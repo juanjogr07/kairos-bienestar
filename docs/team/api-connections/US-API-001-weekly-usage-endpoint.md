@@ -1,13 +1,13 @@
 # US-API-001 — Endpoint de uso semanal por día
 
-> ⚠️ **IMPLEMENTADO — pendiente merge a dev** — Código listo en rama `feature/apiconections`. Necesita PR hacia `dev`. Ver plan maestro: `docs/plans/2026-05-23-implementacion-pendiente.md`
+> ✅ **IMPLEMENTADO** — Mergeado en `dev` vía `main` (commit `212fa22`). Ver plan maestro: `docs/plans/2026-05-23-implementacion-pendiente.md`
 
 **Asignado a:** API & Connections  
 **Prioridad:** Alta  
 **Estimación:** 2 puntos  
-**Rama:** `feat/api/US-API-001-weekly-usage`  
-**Estado:** ⚠️ Código en `feature/apiconections` — abrir PR hacia `dev`  
-**Requerido por:** US-FE-001 (Frontend)
+**Rama:** `feature/apiconections`  
+**Estado:** ✅ Mergeado en `dev`  
+**Requerido por:** US-FE-001 (Frontend) — endpoint listo para conectar
 
 ---
 
@@ -89,7 +89,7 @@ async def weekly_usage(user_id: str = Depends(get_current_user)):
 
 ## Definition of Done
 
-- [x] Endpoint en `/api/v1/dashboard/weekly-usage` (en `feature/apiconections`)
-- [ ] Test con datos seed — **pendiente verificar**
-- [ ] **ACCIÓN REQUERIDA:** Abrir PR desde `feature/apiconections` → `dev` (cuidado con conflicto en `routers/chat.py`)
-- [ ] Notificar a Frontend cuando esté en `dev`
+- [x] Endpoint en `/api/v1/dashboard/weekly-usage`
+- [x] Test con datos seed (`api-service/tests/test_dashboard.py`)
+- [x] Mergeado en `dev`
+- [ ] **PENDIENTE:** Frontend conectar con el endpoint real (actualmente usa mock data)

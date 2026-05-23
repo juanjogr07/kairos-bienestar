@@ -1,12 +1,12 @@
 # US-API-002 — Retry con backoff en sync de la extensión
 
-> ⚠️ **IMPLEMENTADO — pendiente merge a dev** — Código listo en rama `feature/apiconections`. Necesita PR hacia `dev`. Ver plan maestro: `docs/plans/2026-05-23-implementacion-pendiente.md`
+> ✅ **IMPLEMENTADO** — Mergeado en `dev` vía `main` (commit `018e3fe`). Ver plan maestro: `docs/plans/2026-05-23-implementacion-pendiente.md`
 
 **Asignado a:** API & Connections  
 **Prioridad:** Alta  
 **Estimación:** 2 puntos  
-**Rama:** `feat/api/US-API-002-extension-retry`  
-**Estado:** ⚠️ Código en `feature/apiconections` — abrir PR hacia `dev`
+**Rama:** `feature/apiconections`  
+**Estado:** ✅ Mergeado en `dev`
 
 ---
 
@@ -80,5 +80,5 @@ async function syncWithRetry(events: UsageEvent[], attempt = 0): Promise<void> {
 
 - [x] Retry implementado con los 3 delays (`extension/src/background/sync.ts`)
 - [x] 401 no reintenta
-- [ ] **ACCIÓN REQUERIDA:** Abrir PR desde `feature/apiconections` → `dev`
-- [ ] Build de extensión: `npm run build` sin errores — **pendiente verificar tras merge**
+- [x] Mergeado en `dev`
+- [ ] Build de extensión: `npm run build` sin errores — **pendiente verificar en local**
