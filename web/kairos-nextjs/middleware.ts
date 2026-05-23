@@ -26,8 +26,12 @@ export async function middleware(request: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const useMock = process.env.NEXT_PUBLIC_USE_MOCK === "true";
 
-  if (useMock || !supabaseUrl || !supabaseAnonKey) {
+  if (useMock) {
     return NextResponse.next({ request });
+  }
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error("Supabase no está configurado. Define NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY.");
   }
 
   let supabaseResponse = NextResponse.next({ request });
@@ -55,7 +59,7 @@ export async function middleware(request: NextRequest) {
 
   if (!user && !onPublicRoute) {
     const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/";
+    loginUrl.pathname = "/login";
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }
