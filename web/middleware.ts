@@ -23,12 +23,18 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const isMockMode = process.env.NEXT_PUBLIC_USE_MOCK === "true"
 
   const isAuthRoute = request.nextUrl.pathname.startsWith("/login")
   const isProtected = !isAuthRoute && request.nextUrl.pathname !== "/"
+
+  if (isMockMode && isProtected) {
+    return supabaseResponse
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   if (!user && isProtected) {
     return NextResponse.redirect(new URL("/login", request.url))
