@@ -14,8 +14,22 @@ for mod in ["supabase", "anthropic", "openai", "sentence_transformers"]:
 # Stub database module so triage/tree.py imports cleanly
 import types
 
+# Configure the supabase mock so that execute().data always returns []
+# instead of a truthy MagicMock, which would cause TypeError in triage comparisons
+def _make_supabase_mock() -> MagicMock:
+    mock = MagicMock()
+    empty_result = MagicMock()
+    empty_result.data = []
+    mock.table.return_value.select.return_value.eq.return_value.eq.return_value \
+        .order.return_value.limit.return_value.execute.return_value = empty_result
+    mock.table.return_value.select.return_value.eq.return_value \
+        .order.return_value.limit.return_value.execute.return_value = empty_result
+    mock.table.return_value.select.return_value.eq.return_value \
+        .execute.return_value = empty_result
+    return mock
+
 database_mod = types.ModuleType("database")
-database_mod.supabase = MagicMock()
+database_mod.supabase = _make_supabase_mock()
 database_mod.get_supabase = MagicMock()
 sys.modules["database"] = database_mod
 
