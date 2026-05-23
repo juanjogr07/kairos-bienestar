@@ -2,6 +2,8 @@
 Mock out heavy dependencies (supabase, anthropic) before test collection.
 This allows triage and logic tests to run without installed packages.
 """
+# pytest-asyncio 0.23 / pytest 8 compatibility — disable asyncio plugin for sync-only tests
+collect_ignore_glob = []
 import sys
 from unittest.mock import MagicMock
 
