@@ -75,6 +75,37 @@ TOOLS = [
 
 HABIT_MARKER = "HÁBITO_SUGERIDO:"
 
+CRISIS_RESPONSE = """Noto que estás atravesando un momento muy difícil.
+Gracias por confiar en mí, y quiero asegurarme de que recibas el apoyo adecuado.
+
+📞 **Línea 106 — Salud mental**
+Gratuita · Confidencial · Disponible 24 horas
+Llama ahora si necesitas hablar con alguien.
+
+Estoy aquí para acompañarte, pero en este momento lo más importante es que te conectes con un profesional."""
+
+WEEKLY_REPORT_PROMPT = """Genera un reporte semanal de bienestar digital en formato Markdown.
+Usa PRIMERO get_usage_summary (days=7), get_survey_scores y get_ml_scores para recopilar los datos antes de redactar.
+
+Estructura OBLIGATORIA (incluye exactamente estos encabezados):
+
+## Resumen de la semana
+[2 líneas con los hallazgos principales]
+
+## Uso Digital
+[minutos totales, top 3 dominios, comparación con semana anterior si existe]
+
+## Estado de Ánimo
+[PHQ-9 actual y tendencia vs semana anterior]
+
+## Hábitos
+[completados / total, mejor racha]
+
+## Para la próxima semana
+[1 sugerencia concreta y accionable basada en los datos]
+
+Tono: cálido, motivador, sin juicios. Máximo 300 palabras. Habla en español."""
+
 SYSTEM_PROMPT = """Eres Kairós, un copiloto de bienestar digital. Tu rol es ayudar a las personas a entender sus patrones de uso digital y acompañarlas hacia mayor bienestar.
 
 REGLAS CRÍTICAS:
@@ -109,6 +140,16 @@ def _execute_tool(tool_name: str, tool_input: dict) -> str:
 
 def chat(user_id: str, message: str) -> dict:
     triage_result = run_triage(user_id)
+
+    # GUARDRAIL — executes before LLM, cannot be bypassed by prompt or history
+    if triage_result["level"] == "crisis":
+        mem.add_message(user_id, "user", message)
+        mem.add_message(user_id, "assistant", CRISIS_RESPONSE)
+        return {
+            "reply": CRISIS_RESPONSE,
+            "playbook_activated": "crisis-escalation",
+            "suggested_habit": None,
+        }
 
     triage_context = (
         f"\n\nCONTEXTO DE TRIAJE:\n"
@@ -185,3 +226,17 @@ def chat(user_id: str, message: str) -> dict:
         "playbook_activated": triage_result.get("playbook_slug"),
         "suggested_habit": suggested_habit,
     }
+
+
+def generate_weekly_report(user_id: str) -> dict:
+    usage = get_usage_summary(user_id, days=7)
+    if usage.get("days_with_data", 0) < 3:
+        return {
+            "reply": (
+                "Necesito al menos 3 días de datos para generar tu reporte semanal. "
+                "Sigue usando Kairós esta semana y vuelve pronto."
+            ),
+            "playbook_activated": None,
+            "suggested_habit": None,
+        }
+    return chat(user_id=user_id, message=WEEKLY_REPORT_PROMPT)

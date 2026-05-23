@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 from typing import Optional
 from auth import get_current_user
-from agent.orchestrator import chat as agent_chat
+from agent.orchestrator import chat as agent_chat, generate_weekly_report
 from agent import memory as mem
 from rate_limit import limiter
 
@@ -46,10 +46,7 @@ async def trigger_endpoint(
     user_id: str = Depends(get_current_user),
 ):
     if request.trigger == "weekly_report":
-        result = agent_chat(
-            user_id=user_id,
-            message="Genera un reporte semanal de mi uso digital y bienestar.",
-        )
+        result = generate_weekly_report(user_id=user_id)
         return {"report": result["reply"]}
     return {"error": f"Trigger desconocido: {request.trigger}"}
 
