@@ -75,6 +75,28 @@ TOOLS = [
 
 HABIT_MARKER = "HÁBITO_SUGERIDO:"
 
+WEEKLY_REPORT_PROMPT = """Genera un reporte semanal de bienestar digital en formato Markdown.
+Usa PRIMERO get_usage_summary (days=7), get_survey_scores y get_ml_scores para recopilar los datos antes de redactar.
+
+Estructura OBLIGATORIA (incluye exactamente estos encabezados):
+
+## Resumen de la semana
+[2 líneas con los hallazgos principales]
+
+## Uso Digital
+[minutos totales, top 3 dominios, comparación con semana anterior si existe]
+
+## Estado de Ánimo
+[PHQ-9 actual y tendencia vs semana anterior]
+
+## Hábitos
+[completados / total, mejor racha]
+
+## Para la próxima semana
+[1 sugerencia concreta y accionable basada en los datos]
+
+Tono: cálido, motivador, sin juicios. Máximo 300 palabras. Habla en español."""
+
 SYSTEM_PROMPT = """Eres Kairós, un copiloto de bienestar digital. Tu rol es ayudar a las personas a entender sus patrones de uso digital y acompañarlas hacia mayor bienestar.
 
 REGLAS CRÍTICAS:
@@ -185,3 +207,17 @@ def chat(user_id: str, message: str) -> dict:
         "playbook_activated": triage_result.get("playbook_slug"),
         "suggested_habit": suggested_habit,
     }
+
+
+def generate_weekly_report(user_id: str) -> dict:
+    usage = get_usage_summary(user_id, days=7)
+    if usage.get("days_with_data", 0) < 3:
+        return {
+            "reply": (
+                "Necesito al menos 3 días de datos para generar tu reporte semanal. "
+                "Sigue usando Kairós esta semana y vuelve pronto."
+            ),
+            "playbook_activated": None,
+            "suggested_habit": None,
+        }
+    return chat(user_id=user_id, message=WEEKLY_REPORT_PROMPT)
