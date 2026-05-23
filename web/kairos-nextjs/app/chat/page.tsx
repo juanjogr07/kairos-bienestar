@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
+import { AuthSpinner } from "@/components/AuthSpinner";
 
 interface Msg {
   id: string;
@@ -82,7 +83,7 @@ export default function ChatPage() {
     }, 1400);
   };
 
-  if (checking) return <div className="flex h-screen items-center justify-center"><span className="h-6 w-6 animate-spin rounded-full border-2 border-accent-secondary border-t-transparent" /></div>;
+  if (checking) return <AuthSpinner />;
 
   return (
     <>

@@ -8,9 +8,7 @@ export default function CrisisPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-bg-deep px-5 py-10">
       <div className="w-full max-w-md text-center page-enter">
-        <div className="mx-auto mb-8 flex justify-center">
-          <Logo size={28} />
-        </div>
+        <div className="mx-auto mb-8 flex justify-center"><Logo size={28} /></div>
 
         <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[rgba(123,111,240,0.15)]">
           <Heart size={36} className="text-accent-secondary" strokeWidth={2} />
