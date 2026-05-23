@@ -108,6 +108,16 @@ test(ml):       docs(...):  chore(...):
 
 ---
 
+## Flujo de revisión de PR
+
+Cuando asistas en la revisión o creación de Pull Requests (PR), debes seguir estrictamente este flujo:
+1. **Aprobación requerida:** Nunca subas una PR sin que antes los cambios hayan sido aprobados explícitamente.
+2. **Revisión contra la documentación:** Realiza una revisión exhaustiva del código propuesto comparándolo SIEMPRE con los documentos del directorio `docs/`, haciendo especial énfasis en el proyecto en específico (`docs/superpowers/plans/`) y los roles (`docs/team/`).
+3. **Validación estricta:** SIEMPRE revisa y asegúrate de que los cambios cumplan rigurosamente con las especificaciones y contratos definidos en estos documentos. No apruebes ni generes PRs que violen la arquitectura o los lineamientos del equipo.
+
+
+---
+
 ## Contratos de API — fuente de verdad
 
 Los contratos están en `docs/superpowers/plans/2026-05-23-mvp-24h-master.md`. Son inmutables sin aprobación del equipo. Los principales:
