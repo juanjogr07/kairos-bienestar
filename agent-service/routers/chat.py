@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 from typing import Optional
 from auth import get_current_user
 from agent.orchestrator import chat as agent_chat, generate_weekly_report
 from agent import memory as mem
+from rate_limit import limiter
 
 router = APIRouter(prefix="/api/v1/agent", tags=["agent"])
 
@@ -24,11 +25,18 @@ class TriggerRequest(BaseModel):
 
 
 @router.post("/chat", response_model=ChatResponse)
+@limiter.limit("20/hour")
 async def chat_endpoint(
-    request: ChatRequest,
+    request: Request,
+    body: ChatRequest,
     user_id: str = Depends(get_current_user),
 ):
-    result = agent_chat(user_id=user_id, message=request.message)
+    """POST /api/v1/agent/chat — Rate limited: 20 req/hora por usuario.
+
+    Al superar el límite retorna HTTP 429 con mensaje en español.
+    El límite se resetea cada hora (sliding window).
+    """
+    result = agent_chat(user_id=user_id, message=body.message)
     return ChatResponse(**result)
 
 
