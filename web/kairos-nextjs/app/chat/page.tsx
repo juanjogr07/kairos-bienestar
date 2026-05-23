@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 interface Msg {
   id: string;
@@ -47,6 +48,7 @@ const INITIAL: Msg[] = [
 ];
 
 export default function ChatPage() {
+  const { checking } = useRequireAuth();
   const [messages, setMessages] = useState<Msg[]>(INITIAL);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
@@ -79,6 +81,8 @@ export default function ChatPage() {
       ]);
     }, 1400);
   };
+
+  if (checking) return <div className="flex h-screen items-center justify-center"><span className="h-6 w-6 animate-spin rounded-full border-2 border-accent-secondary border-t-transparent" /></div>;
 
   return (
     <>
