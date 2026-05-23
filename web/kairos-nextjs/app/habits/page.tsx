@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Plus, Check, Flame, X, Sparkles } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 interface Habit {
   id: string;
@@ -51,6 +52,7 @@ const INITIAL: Habit[] = [
 ];
 
 export default function HabitsPage() {
+  const { checking } = useRequireAuth();
   const [habits, setHabits] = useState<Habit[]>(INITIAL);
   const [showSheet, setShowSheet] = useState(false);
   const [name, setName] = useState("");
@@ -96,6 +98,8 @@ export default function HabitsPage() {
     setFreq("daily");
     setShowSheet(false);
   };
+
+  if (checking) return <div className="flex h-screen items-center justify-center"><span className="h-6 w-6 animate-spin rounded-full border-2 border-accent-secondary border-t-transparent" /></div>;
 
   return (
     <AppShell>

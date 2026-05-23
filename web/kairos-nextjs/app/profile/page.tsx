@@ -13,12 +13,17 @@ import {
   Zap,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 const PHQ_HISTORY = [12, 11, 13, 10, 9, 8, 9];
 const GAD_HISTORY = [10, 9, 11, 8, 7, 6, 6];
 const LABELS = ["Sem 1", "Sem 2", "Sem 3", "Sem 4", "Sem 5", "Sem 6", "Hoy"];
 
 export default function ProfilePage() {
+  const { checking } = useRequireAuth();
+
+  if (checking) return <div className="flex h-screen items-center justify-center"><span className="h-6 w-6 animate-spin rounded-full border-2 border-accent-secondary border-t-transparent" /></div>;
+
   return (
     <AppShell>
       {/* Avatar header */}
