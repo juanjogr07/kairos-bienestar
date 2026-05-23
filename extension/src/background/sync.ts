@@ -1,12 +1,41 @@
-import { getBuffer, clearBuffer, getAuthToken } from "../storage/buffer"
+import {
+  clearAuthToken,
+  clearBuffer,
+  getAuthToken,
+  getBuffer,
+  recordSyncError,
+  recordSyncSuccess,
+} from "../storage/buffer"
+import type { SyncResult } from "../shared/types"
 
-const API_URL = "http://localhost:8000"
+/**
+ * URL del backend. Se inyecta en build-time vía DefinePlugin (`KAIROS_API_URL`).
+ * Fallback a localhost para desarrollo si no fue definida.
+ */
+declare const KAIROS_API_URL: string | undefined
+export const API_URL =
+  typeof KAIROS_API_URL === "string" && KAIROS_API_URL.length > 0
+    ? KAIROS_API_URL
+    : "http://localhost:8000"
+
 const SYNC_ALARM = "kairos_sync"
+const SYNC_RETRY_ALARM_PREFIX = "kairos_sync_retry_"
 const SYNC_INTERVAL_MINUTES = 5
 
-// Backoff exponencial: 5s, 15s, 45s
-const RETRY_DELAYS = [5000, 15000, 45000]
-const MAX_RETRIES = RETRY_DELAYS.length
+/**
+ * Backoff: 5s, 15s, 45s ⇒ máximo 3 reintentos (4 intentos totales).
+ * Cumple con US-API-002 y se ejecuta en alarmas separadas para que el
+ * service worker MV3 pueda suspenderse entre intentos sin perder retries.
+ */
+const RETRY_DELAYS_SECONDS = [5, 15, 45]
+const MAX_RETRIES = RETRY_DELAYS_SECONDS.length
+
+const RETRY_STATE_KEY = "kairos_sync_retry_state"
+
+interface RetryState {
+  attempt: number
+  scheduled_at: number
+}
 
 export function initSync(): void {
   chrome.alarms.create(SYNC_ALARM, {
@@ -17,23 +46,24 @@ export function initSync(): void {
   chrome.alarms.onAlarm.addListener(async (alarm) => {
     if (alarm.name === SYNC_ALARM) {
       await syncToAPI()
+      return
+    }
+    if (alarm.name.startsWith(SYNC_RETRY_ALARM_PREFIX)) {
+      await syncToAPI()
     }
   })
 }
 
 /**
- * Intenta enviar eventos al backend con retry y backoff exponencial.
- *
- * - Máximo 3 reintentos (delays: 5s, 15s, 45s)
- * - Si el servidor retorna 401, NO reintenta (token inválido)
- * - Si los 3 reintentos fallan, los eventos se quedan en buffer
- *   para el próximo ciclo de sync (5 min)
+ * Hace un único intento de POST al backend.
+ * - 401 ⇒ token inválido: limpia token y no reintenta.
+ * - 2xx ⇒ marca éxito y limpia el buffer.
+ * - Otros ⇒ devuelve error para que el caller decida reintentar.
  */
-async function syncWithRetry(
+async function attemptSend(
   events: unknown[],
-  token: string,
-  attempt: number = 0
-): Promise<{ success: boolean; sent: number }> {
+  token: string
+): Promise<SyncResult> {
   try {
     const response = await fetch(`${API_URL}/api/v1/events/batch`, {
       method: "POST",
@@ -44,49 +74,114 @@ async function syncWithRetry(
       body: JSON.stringify({ events }),
     })
 
-    // 401 = token inválido — no tiene sentido reintentar
     if (response.status === 401) {
-      await chrome.storage.local.remove("kairos_auth_token")
-      console.error("[Kairós] Token inválido — sync cancelado, no se reintenta")
-      return { success: false, sent: 0 }
+      await clearAuthToken()
+      const msg = "Token inválido — sesión expirada"
+      await recordSyncError(msg)
+      console.error("[Kairós]", msg)
+      return { success: false, sent: 0, error: msg }
     }
 
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`)
+      const text = await response.text().catch(() => "")
+      throw new Error(`HTTP ${response.status} ${text.slice(0, 120)}`)
     }
 
-    const data = (await response.json()) as { received: number }
+    const data = (await response.json().catch(() => ({ received: 0 }))) as {
+      received?: number
+    }
+    const received = data.received ?? events.length
     await clearBuffer()
-    console.log(`[Kairós] Sync exitoso — ${data.received} eventos enviados`)
-    return { success: true, sent: data.received }
+    await recordSyncSuccess(received)
+    console.log(`[Kairós] Sync OK — ${received} eventos enviados`)
+    return { success: true, sent: received }
   } catch (err) {
-    if (attempt < MAX_RETRIES) {
-      console.error(
-        `[Kairós] Sync fallido (intento ${attempt + 1}/${MAX_RETRIES}):`,
-        err
-      )
-      await new Promise((r) => setTimeout(r, RETRY_DELAYS[attempt]!))
-      return syncWithRetry(events, token, attempt + 1)
-    }
-
-    console.error(
-      "[Kairós] Sync agotó reintentos — eventos permanecen en buffer para próximo ciclo"
-    )
-    return { success: false, sent: 0 }
+    const message =
+      err instanceof Error ? err.message : String(err ?? "error desconocido")
+    return { success: false, sent: 0, error: message }
   }
 }
 
-export async function syncToAPI(): Promise<{ success: boolean; sent: number }> {
+async function getRetryState(): Promise<RetryState | null> {
+  const result = await chrome.storage.local.get(RETRY_STATE_KEY)
+  return (result[RETRY_STATE_KEY] as RetryState | undefined) ?? null
+}
+
+async function setRetryState(state: RetryState | null): Promise<void> {
+  if (state === null) {
+    await chrome.storage.local.remove(RETRY_STATE_KEY)
+  } else {
+    await chrome.storage.local.set({ [RETRY_STATE_KEY]: state })
+  }
+}
+
+async function clearScheduledRetries(): Promise<void> {
+  const alarms = await chrome.alarms.getAll()
+  await Promise.all(
+    alarms
+      .filter((a) => a.name.startsWith(SYNC_RETRY_ALARM_PREFIX))
+      .map((a) => chrome.alarms.clear(a.name))
+  )
+}
+
+async function scheduleRetry(attempt: number): Promise<void> {
+  const delaySec = RETRY_DELAYS_SECONDS[attempt - 1] ?? 60
+  await setRetryState({ attempt, scheduled_at: Date.now() })
+  await chrome.alarms.create(`${SYNC_RETRY_ALARM_PREFIX}${attempt}`, {
+    delayInMinutes: delaySec / 60,
+  })
+  console.warn(
+    `[Kairós] Reintento ${attempt}/${MAX_RETRIES} programado en ${delaySec}s`
+  )
+}
+
+/**
+ * Punto de entrada del sync.
+ * - Si hay alarms de retry encoladas: el siguiente disparo continúa el flujo.
+ * - Cada llamada hace UN intento; si falla, encola el siguiente retry o se rinde.
+ */
+export async function syncToAPI(): Promise<SyncResult> {
   const token = await getAuthToken()
   if (!token) {
-    console.log("[Kairós] Sin token de auth — sync omitido")
-    return { success: false, sent: 0 }
+    console.log("[Kairós] Sin token — sync omitido")
+    await clearScheduledRetries()
+    await setRetryState(null)
+    return { success: false, sent: 0, error: "no_token" }
   }
 
   const buffer = await getBuffer()
   if (buffer.length === 0) {
+    await clearScheduledRetries()
+    await setRetryState(null)
     return { success: true, sent: 0 }
   }
 
-  return syncWithRetry(buffer, token)
+  const result = await attemptSend(buffer, token)
+  if (result.success || result.error === "Token inválido — sesión expirada") {
+    await clearScheduledRetries()
+    await setRetryState(null)
+    return result
+  }
+
+  const state = await getRetryState()
+  const nextAttempt = (state?.attempt ?? 0) + 1
+
+  if (nextAttempt > MAX_RETRIES) {
+    console.error(
+      "[Kairós] Sync agotó reintentos — eventos preservados para el próximo ciclo"
+    )
+    await recordSyncError(
+      `Reintentos agotados: ${result.error ?? "error desconocido"}`
+    )
+    await clearScheduledRetries()
+    await setRetryState(null)
+    return result
+  }
+
+  console.error(
+    `[Kairós] Sync fallido (intento ${nextAttempt}/${MAX_RETRIES + 1}): ${result.error}`
+  )
+  await recordSyncError(result.error ?? "fallo de red")
+  await scheduleRetry(nextAttempt)
+  return result
 }
