@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from auth import get_current_user
 from database import supabase
+from services.notification_service import check_habit_reminders
 from services.streak_service import calculate_streak_update
 from models.habits import HabitCreate, HabitOut
 from typing import List
@@ -13,6 +14,8 @@ router = APIRouter(prefix="/api/v1", tags=["habits"])
 
 @router.get("/habits", response_model=List[HabitOut])
 async def list_habits(user_id: str = Depends(get_current_user)):
+    check_habit_reminders(user_id)
+
     habits_res = (
         supabase.table("habits")
         .select("id, name, playbook_slug, frequency, active")
