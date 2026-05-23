@@ -14,7 +14,6 @@ import base64
 import importlib
 import json
 import sys
-import types
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -36,20 +35,9 @@ def _make_jwt(sub: str) -> str:
 @pytest.fixture
 def client():
     """App con dependencias pesadas stubeadas y limiter reinicializado."""
-    agent_pkg = types.ModuleType("agent")
-    sys.modules["agent"] = agent_pkg
-
-    orchestrator_mod = types.ModuleType("agent.orchestrator")
-    orchestrator_mod.chat = lambda user_id, message: {
-        "reply": "ok",
-        "playbook_activated": None,
-        "suggested_habit": None,
-    }
-    sys.modules["agent.orchestrator"] = orchestrator_mod
-
-    memory_mod = types.ModuleType("agent.memory")
-    memory_mod.get_history = lambda user_id: []
-    sys.modules["agent.memory"] = memory_mod
+    # Evitar que un test previo deje módulos parciales cacheados.
+    for mod in ["main", "routers.chat"]:
+        sys.modules.pop(mod, None)
 
     # Recargar rate_limit + main para que el contador in-memory de slowapi
     # arranque limpio en cada test
@@ -70,7 +58,15 @@ def client():
 
     mock_db.auth.get_user.side_effect = _make_user
 
-    with patch("auth.supabase", mock_db):
+    chat_result = {
+        "reply": "ok",
+        "playbook_activated": None,
+        "suggested_habit": None,
+    }
+
+    with patch("auth.supabase", mock_db), \
+         patch("routers.chat.agent_chat", return_value=chat_result), \
+         patch("routers.chat.generate_weekly_report", return_value=chat_result):
         yield TestClient(main_mod.app)
 
 
