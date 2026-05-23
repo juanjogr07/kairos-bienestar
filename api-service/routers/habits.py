@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends
 from auth import get_current_user
 from database import supabase
-from services.streak_engine import calculate_streak_after_completion
+from services.streak_service import calculate_streak_update
 from models.habits import HabitCreate, HabitOut
 from typing import List
 from datetime import date
+
+DEFAULT_GRACE_DAYS_ALLOWED = 1
 
 router = APIRouter(prefix="/api/v1", tags=["habits"])
 
@@ -73,10 +75,73 @@ async def create_habit(habit: HabitCreate, user_id: str = Depends(get_current_us
     )
 
 
+def _streak_row_to_state(row: dict) -> dict:
+    last = date.fromisoformat(row["last_completion"]) if row.get("last_completion") else None
+    return {
+        "current_streak": row["current_streak"],
+        "longest_streak": row["longest_streak"],
+        "last_completion": last,
+        "grace_days_used": row.get("grace_days_used", 0),
+        "grace_days_allowed": row.get("grace_days_allowed", DEFAULT_GRACE_DAYS_ALLOWED),
+    }
+
+
+def _persist_streak(habit_id: str, user_id: str, update: dict, *, exists: bool) -> None:
+    payload = {
+        "current_streak": update["current_streak"],
+        "longest_streak": update["longest_streak"],
+        "last_completion": update["last_completion"].isoformat(),
+        "grace_days_used": update["grace_days_used"],
+    }
+    if exists:
+        supabase.table("streaks").update(payload).eq("habit_id", habit_id).execute()
+    else:
+        supabase.table("streaks").insert(
+            {"habit_id": habit_id, "user_id": user_id, **payload}
+        ).execute()
+
+
 @router.post("/habits/{habit_id}/complete")
 async def complete_habit(habit_id: str, user_id: str = Depends(get_current_user)):
+    today = date.today()
+
+    streak_res = (
+        supabase.table("streaks").select("*").eq("habit_id", habit_id).execute()
+    )
+
+    if streak_res.data:
+        streak_state = _streak_row_to_state(streak_res.data[0])
+        if streak_state["last_completion"] == today:
+            return {
+                "streak": streak_state["current_streak"],
+                "message": "Ya registraste este hábito hoy.",
+                "used_grace_day": False,
+                "broken": False,
+            }
+    else:
+        streak_state = {
+            "current_streak": 0,
+            "longest_streak": 0,
+            "last_completion": None,
+            "grace_days_used": 0,
+            "grace_days_allowed": DEFAULT_GRACE_DAYS_ALLOWED,
+        }
+
     supabase.table("habit_completions").insert(
         {"habit_id": habit_id, "user_id": user_id}
     ).execute()
 
-    return calculate_streak_after_completion(user_id, habit_id)
+    update = calculate_streak_update(streak_state, today)
+    _persist_streak(
+        habit_id,
+        user_id,
+        update,
+        exists=bool(streak_res.data),
+    )
+
+    return {
+        "streak": update["current_streak"],
+        "message": update["message"],
+        "used_grace_day": update["used_grace_day"],
+        "broken": update["broken"],
+    }
