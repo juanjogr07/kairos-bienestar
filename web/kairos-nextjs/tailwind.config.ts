@@ -1,10 +1,18 @@
 import type { Config } from "tailwindcss";
+// `@heroui/react` re-exporta `heroui` (un plugin Tailwind) cuyos tipos
+// internos provienen de su propia copia de tailwindcss y son ligeramente
+// distintos a los del Tailwind del proyecto. Casteamos el plugin para
+// evitar el clash de tipos (la implementación es 100% compatible en runtime).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+import { heroui } from "@heroui/react";
 
 const config: Config = {
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
@@ -127,7 +135,96 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (heroui as any)({
+      themes: {
+        kairos: {
+          extend: "dark",
+          colors: {
+            background: "#070B14",
+            foreground: "#E8EDF5",
+            divider: "#1E2D52",
+            focus: "#4FFFB0",
+            content1: "#0D1424",
+            content2: "#141D35",
+            content3: "#1A2440",
+            content4: "#1E2D52",
+            default: {
+              50: "#1A2440",
+              100: "#1E2D52",
+              200: "#2D4A8A",
+              300: "#4A5570",
+              400: "#8A96B0",
+              500: "#E8EDF5",
+              600: "#E8EDF5",
+              700: "#E8EDF5",
+              800: "#E8EDF5",
+              900: "#E8EDF5",
+              foreground: "#E8EDF5",
+              DEFAULT: "#1E2D52",
+            },
+            primary: {
+              50: "rgba(79,255,176,0.05)",
+              100: "rgba(79,255,176,0.1)",
+              200: "rgba(79,255,176,0.2)",
+              300: "rgba(79,255,176,0.35)",
+              400: "rgba(79,255,176,0.55)",
+              500: "#4FFFB0",
+              600: "#3FE89A",
+              700: "#2FD088",
+              800: "#1FB876",
+              900: "#0FA064",
+              foreground: "#070B14",
+              DEFAULT: "#4FFFB0",
+            },
+            secondary: {
+              50: "rgba(123,111,240,0.05)",
+              100: "rgba(123,111,240,0.12)",
+              200: "rgba(123,111,240,0.2)",
+              300: "rgba(123,111,240,0.35)",
+              400: "rgba(123,111,240,0.55)",
+              500: "#7B6FF0",
+              600: "#6A5EE0",
+              700: "#594DD0",
+              800: "#483CC0",
+              900: "#372BA8",
+              foreground: "#E8EDF5",
+              DEFAULT: "#7B6FF0",
+            },
+            success: {
+              500: "#4FFFB0",
+              foreground: "#070B14",
+              DEFAULT: "#4FFFB0",
+            },
+            warning: {
+              500: "#FF9F5A",
+              foreground: "#070B14",
+              DEFAULT: "#FF9F5A",
+            },
+            danger: {
+              500: "#FF4D6A",
+              foreground: "#E8EDF5",
+              DEFAULT: "#FF4D6A",
+            },
+          },
+          layout: {
+            radius: {
+              small: "6px",
+              medium: "12px",
+              large: "20px",
+            },
+            fontSize: {
+              tiny: "11px",
+              small: "13px",
+              medium: "15px",
+              large: "20px",
+            },
+          },
+        },
+      },
+    }),
+  ],
 };
 
 export default config;

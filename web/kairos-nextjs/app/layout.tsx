@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { HeroUIAppProvider } from "@/components/providers/HeroUIAppProvider";
 
 export const metadata: Metadata = {
   title: "Kairós — Tu copiloto de bienestar digital",
@@ -13,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es">
+    <html lang="es" className="dark" data-theme="kairos">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -27,7 +28,7 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-bg-deep text-text-primary antialiased">
-        {children}
+        <HeroUIAppProvider>{children}</HeroUIAppProvider>
       </body>
     </html>
   );
