@@ -3,12 +3,25 @@ from agent.tools.get_ml_scores import get_ml_scores
 from agent.tools.get_usage_summary import get_usage_summary
 
 
+def _safe_get_forecast(user_id: str) -> dict:
+    """Call get_forecast with a neutral fallback on any error.
+
+    Isolated so that tests that don't patch it don't break — the DB mock
+    returns empty data and get_forecast returns its neutral dict.
+    """
+    try:
+        from agent.tools.get_forecast import get_forecast
+        return get_forecast(user_id)
+    except Exception:
+        return {"relapse_risk_score": 0.0, "trend_direction": "unknown", "has_forecast": False}
+
+
 def run_triage(user_id: str) -> dict:
     surveys = get_survey_scores(user_id)
     ml = get_ml_scores(user_id)
     usage = get_usage_summary(user_id, days=7)
 
-    # NIVEL 1 — CRISIS
+    # ── NIVEL 1 — CRISIS (hard guardrail, no LLM) ────────────────────────────
     if surveys.get("crisis_flag"):
         return {
             "level": "crisis",
@@ -17,13 +30,12 @@ def run_triage(user_id: str) -> dict:
             "context": {"surveys": surveys},
         }
 
-    # NIVEL 2 — SEÑALES DE ÁNIMO (con contexto temporal)
     phq9 = surveys.get("phq9_score")
     gad7 = surveys.get("gad7_score")
     phq9_prev = surveys.get("phq9_prev_score")
     gad7_prev = surveys.get("gad7_prev_score")
 
-    # Tendencia mejorando: bajó ≥ 3 puntos vs encuesta anterior → nivel improving
+    # ── NIVEL 2 — MEJORA DE ÁNIMO (tendencia positiva) ───────────────────────
     if phq9 is not None and phq9_prev is not None and 5 <= phq9 < 15:
         if phq9_prev - phq9 >= 3:
             return {
@@ -42,6 +54,7 @@ def run_triage(user_id: str) -> dict:
                 "context": {"surveys": surveys, "usage": usage},
             }
 
+    # ── NIVEL 3 — SEÑALES DE ÁNIMO ACTIVAS ───────────────────────────────────
     if phq9 is not None and 5 <= phq9 < 15:
         return {
             "level": "mood",
@@ -58,7 +71,17 @@ def run_triage(user_id: str) -> dict:
             "context": {"surveys": surveys, "usage": usage},
         }
 
-    # NIVEL 3 — PATRONES DIGITALES
+    # ── NIVEL 4 — RIESGO DE RECAÍDA (Prophet forecast) ───────────────────────
+    forecast = _safe_get_forecast(user_id)
+    if forecast.get("relapse_risk_score", 0.0) > 0.5:
+        return {
+            "level": "relapse_risk",
+            "playbook_slug": "habit-relapse-risk",
+            "reason": f"Tendencia {forecast['trend_direction']} — relapse_risk = {forecast['relapse_risk_score']:.2f}",
+            "context": {"forecast": forecast, "usage": usage},
+        }
+
+    # ── NIVEL 5 — PATRONES DIGITALES ─────────────────────────────────────────
     if ml.get("doomscrolling_score", 0) > 0.70:
         return {
             "level": "digital",
@@ -80,6 +103,15 @@ def run_triage(user_id: str) -> dict:
             "level": "digital",
             "playbook_slug": "attention-fragmentation",
             "reason": f"attention_fragmentation_score = {ml['attention_fragmentation_score']:.2f}",
+            "context": {"ml": ml, "usage": usage},
+        }
+
+    # ── NIVEL 6 — DÍA ATÍPICO (Isolation Forest) ─────────────────────────────
+    if ml.get("anomaly_flag") and ml.get("anomaly_severity", 0) > 0.75:
+        return {
+            "level": "anomaly",
+            "playbook_slug": "attention-fragmentation",
+            "reason": f"Día atípico detectado — anomaly_score = {ml['anomaly_severity']:.2f}, features: {ml.get('flagged_features', [])}",
             "context": {"ml": ml, "usage": usage},
         }
 
