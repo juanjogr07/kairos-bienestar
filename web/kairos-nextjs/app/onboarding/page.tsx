@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, ArrowLeft, Sparkles, Check, AlertCircle } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { submitSurvey } from "@/lib/api";
 
 const PHQ9: string[] = [
@@ -47,6 +48,7 @@ export default function OnboardingPage() {
     Array(7).fill(null)
   );
   const router = useRouter();
+  const { checking } = useRequireAuth();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -59,6 +61,8 @@ export default function OnboardingPage() {
     phase === "phq9"
       ? "En las últimas 2 semanas, ¿con qué frecuencia te has sentido afectado/a por…"
       : "En las últimas 2 semanas, ¿con qué frecuencia te has sentido afectado/a por…";
+
+  if (checking) return <div className="flex h-screen items-center justify-center"><span className="h-6 w-6 animate-spin rounded-full border-2 border-accent-secondary border-t-transparent" /></div>;
 
   if (phase === "complete") {
     const phqScore = phqAnswers.reduce<number>((s, v) => s + (v ?? 0), 0);
@@ -125,18 +129,21 @@ export default function OnboardingPage() {
           <button
             disabled={submitting}
             onClick={async () => {
+              const isCrisis = phqScore >= 15 || gadScore >= 15;
               setSubmitting(true);
               setSubmitError(null);
               try {
                 await submitSurvey("phq9", phqAnswers.map((v) => v ?? 0));
                 await submitSurvey("gad7", gadAnswers.map((v) => v ?? 0));
+                setSubmitting(false);
               } catch {
                 setSubmitError(
-                  "No pudimos guardar tus respuestas. Continuando al dashboard..."
+                  "No pudimos guardar tus respuestas. Continuando..."
                 );
                 await new Promise((r) => setTimeout(r, 1500));
+                setSubmitting(false);
               } finally {
-                router.push("/dashboard");
+                router.push(isCrisis ? "/crisis" : "/dashboard");
               }
             }}
             className="group mt-8 inline-flex items-center justify-center gap-2 rounded-md bg-gradient-cta px-8 py-3.5 font-bold text-bg-deep shadow-glow-green transition-transform hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100"

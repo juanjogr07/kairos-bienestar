@@ -17,7 +17,10 @@ export async function submitSurvey(type: "phq9" | "gad7", answers: number[]): Pr
   const res = await fetch(`${API_URL}/api/v1/surveys/${type}`, {
     method: "POST",
     headers: await authHeaders(),
-    body: JSON.stringify({ answers }),
+    body: JSON.stringify({
+    responses: Object.fromEntries(answers.map((v, i) => [`q${i + 1}`, v])),
+    total_score: answers.reduce((a, b) => a + b, 0),
+  }),
   })
   if (!res.ok) throw new Error(`Survey submit failed: ${res.status}`)
 }
