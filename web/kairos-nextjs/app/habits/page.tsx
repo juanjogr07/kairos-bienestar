@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Plus, Check, Flame, X, Sparkles } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
+import { AuthSpinner } from "@/components/AuthSpinner";
 
 interface Habit {
   id: string;
@@ -99,7 +100,7 @@ export default function HabitsPage() {
     setShowSheet(false);
   };
 
-  if (checking) return <div className="flex h-screen items-center justify-center"><span className="h-6 w-6 animate-spin rounded-full border-2 border-accent-secondary border-t-transparent" /></div>;
+  if (checking) return <AuthSpinner />;
 
   return (
     <AppShell>

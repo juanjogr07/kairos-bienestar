@@ -14,6 +14,7 @@ import {
 import { AppShell } from "@/components/AppShell";
 import { StreakBadge, ScoreBadge } from "@/components/Badges";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
+import { AuthSpinner } from "@/components/AuthSpinner";
 
 const SITES = [
   { name: "YouTube", min: 45, color: "#FF4D6A" },
@@ -51,7 +52,7 @@ export default function DashboardPage() {
 
   const maxMin = Math.max(...SITES.map((s) => s.min));
 
-  if (checking) return <div className="flex h-screen items-center justify-center"><span className="h-6 w-6 animate-spin rounded-full border-2 border-accent-secondary border-t-transparent" /></div>;
+  if (checking) return <AuthSpinner />;
 
   return (
     <AppShell>

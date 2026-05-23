@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, ArrowLeft, Sparkles, Check } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
+import { AuthSpinner } from "@/components/AuthSpinner";
 
 const PHQ9: string[] = [
   "Poco interés o placer en hacer las cosas",
@@ -46,6 +48,7 @@ export default function OnboardingPage() {
     Array(7).fill(null)
   );
   const router = useRouter();
+  const { checking } = useRequireAuth();
 
   const questions = phase === "phq9" ? PHQ9 : GAD7;
   const answers = phase === "phq9" ? phqAnswers : gadAnswers;
@@ -56,6 +59,8 @@ export default function OnboardingPage() {
     phase === "phq9"
       ? "En las últimas 2 semanas, ¿con qué frecuencia te has sentido afectado/a por…"
       : "En las últimas 2 semanas, ¿con qué frecuencia te has sentido afectado/a por…";
+
+  if (checking) return <AuthSpinner />;
 
   if (phase === "complete") {
     const phqScore = phqAnswers.reduce<number>((s, v) => s + (v ?? 0), 0);
