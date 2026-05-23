@@ -9,9 +9,11 @@ import {
   AlertTriangle,
   Sparkles,
   Plus,
+  Check,
 } from "lucide-react";
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
+import { sendAgentMessage, addSuggestedHabit, getAgentHistory } from "@/lib/agent";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { AuthSpinner } from "@/components/AuthSpinner";
 
@@ -20,6 +22,7 @@ interface Msg {
   from: "me" | "kairos";
   text: string;
   showSuggestion?: boolean;
+  suggestedHabit?: string;
 }
 
 const QUICK_REPLIES = [
@@ -57,30 +60,59 @@ export default function ChatPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    getAgentHistory().then((history) => {
+      if (history.length === 0) return;
+      setMessages(
+        history.map((h) => ({
+          id: h.id,
+          from: h.role === "user" ? "me" : "kairos",
+          text: h.content,
+        }))
+      );
+    });
+  }, []);
+
+  useEffect(() => {
     scrollRef.current?.scrollTo({
       top: scrollRef.current.scrollHeight,
       behavior: "smooth",
     });
   }, [messages, typing]);
 
-  const handleSend = (text?: string) => {
+  const handleSend = async (text?: string) => {
     const value = (text ?? input).trim();
-    if (!value) return;
+    if (!value || typing) return;
     const id = String(Date.now());
     setMessages((m) => [...m, { id, from: "me", text: value }]);
     setInput("");
     setTyping(true);
-    setTimeout(() => {
-      setTyping(false);
+    try {
+      const res = await sendAgentMessage(value);
       setMessages((m) => [
         ...m,
         {
           id: id + "-r",
           from: "kairos",
-          text: "Entiendo. Vamos a ir paso a paso. ¿Te parece si empezamos por dejar el teléfono fuera del cuarto a partir de las 22:30 esta noche?",
+          text: res.reply,
+          showSuggestion: !!res.suggested_habit,
+          suggestedHabit: res.suggested_habit ?? undefined,
         },
       ]);
-    }, 1400);
+    } catch (err: unknown) {
+      const code = err instanceof Error ? err.message : "";
+      const errorText =
+        code === "SERVICE_UNAVAILABLE"
+          ? "El copiloto está temporalmente fuera de servicio. Intenta en unos minutos."
+          : code === "RATE_LIMITED"
+          ? "Has alcanzado el límite de conversaciones por hora. Vuelve pronto."
+          : "Hubo un error al conectar con Kairós. Verifica tu conexión.";
+      setMessages((m) => [
+        ...m,
+        { id: id + "-err", from: "kairos", text: errorText },
+      ]);
+    } finally {
+      setTyping(false);
+    }
   };
 
   if (checking) return <AuthSpinner />;
@@ -141,7 +173,8 @@ export default function ChatPage() {
                 <button
                   key={q}
                   onClick={() => handleSend(q)}
-                  className="shrink-0 animate-fade-up rounded-full border border-border-active bg-bg-elevated px-4 py-2 text-xs font-medium text-text-primary transition-all hover:border-accent-primary hover:text-accent-primary"
+                  disabled={typing}
+                  className="shrink-0 animate-fade-up rounded-full border border-border-active bg-bg-elevated px-4 py-2 text-xs font-medium text-text-primary transition-all hover:border-accent-primary hover:text-accent-primary disabled:opacity-50"
                   style={{ animationDelay: `${i * 60}ms` }}
                 >
                   {q}
@@ -161,13 +194,14 @@ export default function ChatPage() {
                 <input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
+                  disabled={typing}
                   placeholder="Escribe un mensaje a Kairós…"
-                  className="flex-1 bg-transparent text-base text-text-primary placeholder:text-text-muted focus:outline-none"
+                  className="flex-1 bg-transparent text-base text-text-primary placeholder:text-text-muted focus:outline-none disabled:opacity-50"
                 />
               </div>
               <button
                 type="submit"
-                disabled={!input.trim()}
+                disabled={!input.trim() || typing}
                 className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-cta text-bg-deep shadow-glow-green transition-transform hover:scale-105 disabled:opacity-50"
                 aria-label="Enviar"
               >
@@ -185,12 +219,16 @@ export default function ChatPage() {
 
 function Bubble({ msg }: { msg: Msg }) {
   const isMe = msg.from === "me";
+  const [habitAdded, setHabitAdded] = useState(false);
+
+  async function handleAddHabit() {
+    if (!msg.suggestedHabit) return;
+    setHabitAdded(true);
+    await addSuggestedHabit(msg.suggestedHabit);
+  }
+
   return (
-    <div
-      className={`flex animate-fade-up ${
-        isMe ? "justify-end" : "justify-start"
-      }`}
-    >
+    <div className={`flex animate-fade-up ${isMe ? "justify-end" : "justify-start"}`}>
       <div
         className={`max-w-[85%] rounded-lg px-4 py-3 text-base leading-relaxed ${
           isMe
@@ -210,9 +248,20 @@ function Bubble({ msg }: { msg: Msg }) {
         <p>{msg.text}</p>
 
         {msg.showSuggestion && (
-          <button className="group mt-3 flex items-center gap-2 rounded-md border border-accent-primary bg-[rgba(79,255,176,0.08)] px-3 py-2 text-xs font-bold text-accent-primary transition-colors hover:bg-[rgba(79,255,176,0.15)]">
-            <Plus size={14} strokeWidth={2.5} />
-            Agregar hábito sugerido
+          <button
+            onClick={handleAddHabit}
+            disabled={habitAdded}
+            className={`group mt-3 flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-bold transition-colors ${
+              habitAdded
+                ? "border-accent-primary/40 bg-[rgba(79,255,176,0.12)] text-accent-primary cursor-default"
+                : "border-accent-primary bg-[rgba(79,255,176,0.08)] text-accent-primary hover:bg-[rgba(79,255,176,0.15)]"
+            }`}
+          >
+            {habitAdded ? (
+              <><Check size={14} strokeWidth={2.5} /> Hábito agregado</>
+            ) : (
+              <><Plus size={14} strokeWidth={2.5} /> Agregar hábito sugerido</>
+            )}
           </button>
         )}
       </div>

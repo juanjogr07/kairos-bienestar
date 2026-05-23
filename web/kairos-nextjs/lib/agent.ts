@@ -60,6 +60,7 @@ export async function getWeeklyReport(): Promise<AgentResponse> {
   return res.json()
 }
 
+
 export interface HistoryMessage {
   id: string;
   role: "user" | "assistant";
