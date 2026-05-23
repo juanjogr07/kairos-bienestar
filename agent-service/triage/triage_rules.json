@@ -1,0 +1,61 @@
+{
+  "version": "1.0",
+  "description": "Árbol de triaje de Kairós — reglas en orden de prioridad. NO modificar sin revisión.",
+  "rules": [
+    {
+      "priority": 1,
+      "name": "crisis_phq9_severe",
+      "condition": "phq9_score >= 15 OR phq9_q9 >= 1",
+      "playbook": "crisis-escalation",
+      "override_all": true,
+      "note": "PHQ-9 q9 = pensamientos de daño. Cualquier valor > 0 activa crisis."
+    },
+    {
+      "priority": 2,
+      "name": "crisis_gad7_severe",
+      "condition": "gad7_score >= 15",
+      "playbook": "crisis-escalation",
+      "override_all": true
+    },
+    {
+      "priority": 3,
+      "name": "nocturnal_heavy",
+      "condition": "nocturnal_ratio > 0.3 AND last_phq9 < 15",
+      "playbook": "nocturnal-use-pattern",
+      "override_all": false
+    },
+    {
+      "priority": 4,
+      "name": "doomscrolling",
+      "condition": "scroll_speed_avg > 800 OR social_media_min_day > 90",
+      "playbook": "doomscrolling",
+      "override_all": false
+    },
+    {
+      "priority": 5,
+      "name": "attention_fragmentation",
+      "condition": "app_switches_per_hour > 20 OR avg_session_min < 3",
+      "playbook": "attention-fragmentation",
+      "override_all": false
+    },
+    {
+      "priority": 6,
+      "name": "low_mood_mild",
+      "condition": "phq9_score >= 5 AND phq9_score < 15",
+      "playbook": "low-mood-indicators",
+      "override_all": false
+    }
+  ],
+  "default_playbook": "attention-fragmentation",
+  "crisis_resources": {
+    "colombia": {
+      "phone": "106",
+      "description": "Línea Nacional de Salud Mental — gratuita 24h"
+    },
+    "international": {
+      "sms": "741741",
+      "keyword": "HOLA",
+      "description": "Crisis Text Line"
+    }
+  }
+}
