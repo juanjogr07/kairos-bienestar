@@ -1,9 +1,12 @@
 # US-API-003 — Rate limiting en la API
 
+> ⚠️ **IMPLEMENTADO — pendiente merge a dev** — Código listo en rama `feature/apiconections`. Necesita PR hacia `dev`. Ver plan maestro: `docs/plans/2026-05-23-implementacion-pendiente.md`
+
 **Asignado a:** API & Connections  
 **Prioridad:** Media  
 **Estimación:** 3 puntos  
-**Rama:** `feat/api/US-API-003-rate-limiting`
+**Rama:** `feat/api/US-API-003-rate-limiting`  
+**Estado:** ⚠️ Código en `feature/apiconections` — abrir PR hacia `dev`
 
 ---
 
@@ -27,10 +30,10 @@
 
 ## Criterios de aceptación
 
-- [ ] `POST /api/v1/agent/chat` → máximo 20 req/hora por `user_id`
-- [ ] Al superar el límite: HTTP 429 con body `{"error": "Límite de conversaciones alcanzado. Vuelve en X minutos."}`
-- [ ] El límite se resetea cada hora (sliding window)
-- [ ] Los health checks (`GET /health`) no cuentan para el límite
+- [x] `POST /api/v1/agent/chat` → máximo 20 req/hora por `user_id`
+- [x] Al superar el límite: HTTP 429 con body de error en español
+- [x] El límite se resetea cada hora (sliding window via slowapi)
+- [ ] Los health checks (`GET /health`) no cuentan para el límite — **verificar configuración al mergear**
 
 ---
 
@@ -68,7 +71,7 @@ async def chat_endpoint(request: Request, body: ChatRequest, user_id: str = Depe
 
 ## Definition of Done
 
-- [ ] Rate limiting activo en `/chat`
-- [ ] Respuesta 429 con mensaje en español
-- [ ] Health check excluido
-- [ ] PR → `dev`
+- [x] Rate limiting activo en `/chat` (slowapi en `agent-service/rate_limit.py`)
+- [x] Respuesta 429 con mensaje en español
+- [ ] Health check excluido — verificar al mergear
+- [ ] **ACCIÓN REQUERIDA:** Abrir PR desde `feature/apiconections` → `dev` (resolver conflicto en `routers/chat.py`)

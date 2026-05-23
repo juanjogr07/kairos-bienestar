@@ -1,9 +1,12 @@
 # US-AI-003 — Reporte semanal generado por el agente
 
+> ✅ **IMPLEMENTADO** — Mergeado en `dev` (PR #4, commit `acab20d`). Ver plan maestro: `docs/plans/2026-05-23-implementacion-pendiente.md`
+
 **Asignado a:** AI Engineer  
 **Prioridad:** Media  
 **Estimación:** 3 puntos  
-**Rama:** `feat/ai/US-AI-003-reporte-semanal`
+**Rama:** `feat/ai/US-AI-003-reporte-semanal`  
+**Estado:** ✅ Mergeado en `dev`
 
 ---
 
@@ -31,10 +34,10 @@ El endpoint `POST /api/v1/agent/trigger` con `{"trigger": "weekly_report"}` ya e
 
 ## Criterios de aceptación
 
-- [ ] El reporte incluye: minutos totales de uso, top 3 dominios, comparación vs semana anterior, score PHQ-9 y tendencia, hábitos completados / total
-- [ ] Formato Markdown con secciones claras (`## Uso Digital`, `## Estado de Ánimo`, `## Hábitos`)
-- [ ] El reporte se genera en < 10 segundos (sin tool loops innecesarios)
-- [ ] Si no hay datos suficientes (< 3 días), retorna mensaje indicándolo
+- [x] El reporte incluye: minutos totales de uso, top 3 dominios, comparación vs semana anterior, score PHQ-9 y tendencia, hábitos completados / total
+- [x] Formato Markdown con secciones claras (`## Uso Digital`, `## Estado de Ánimo`, `## Hábitos`)
+- [x] El reporte se genera en < 10 segundos (sin tool loops innecesarios)
+- [x] Si no hay datos suficientes (< 3 días), retorna mensaje indicándolo
 
 ---
 
@@ -71,7 +74,7 @@ def generate_weekly_report(user_id: str) -> dict:
 
 ## Definition of Done
 
-- [ ] `POST /api/v1/agent/trigger` con `weekly_report` retorna reporte en Markdown
-- [ ] Tests mockeando las 4 herramientas del agente
-- [ ] PR → `dev`
-- [ ] Avisar a Frontend cuando esté listo para que creen la vista del reporte (US-FE-004)
+- [x] `POST /api/v1/agent/trigger` con `weekly_report` retorna reporte en Markdown
+- [x] Tests mockeando las 4 herramientas del agente (8 tests en `tests/test_weekly_report.py`)
+- [x] PR → `dev` (PR #4)
+- [ ] **PENDIENTE:** Avisar a Frontend — US-FE-004 (vista del reporte) aún no implementada

@@ -1,5 +1,9 @@
 # Kairós — Índice de historias de usuario por persona
 
+> **Última actualización:** 2026-05-23 | **Estado global:** ~55% → ver [plan maestro](../plans/2026-05-23-implementacion-pendiente.md)
+> 
+> Leyenda: ✅ Mergeado en `dev` · ⚠️ Listo, pendiente merge · ❌ No iniciado
+
 ## Estrategia de ramas (todos)
 
 ```
@@ -17,52 +21,58 @@ exp/<id>         ← experimentos ML (solo Backend-1)
 
 ## 🤖 AI Engineer — `agent-service/agent/` · `agent-service/triage/` · `agent-service/rag/`
 
-| ID | Historia | Prioridad | Rama |
-|---|---|---|---|
-| US-AI-001 | [Triage con contexto temporal](ai-engineer/US-AI-001-mejora-triage.md) | Alta | `feat/ai/US-AI-001-triage-temporal` |
-| US-AI-002 | [Hábito sugerido en respuesta](ai-engineer/US-AI-002-suggested-habit.md) | Alta | `feat/ai/US-AI-002-suggested-habit` |
-| US-AI-003 | [Reporte semanal generado por el agente](ai-engineer/US-AI-003-reporte-semanal.md) | Media | `feat/ai/US-AI-003-reporte-semanal` |
-| US-AI-004 | [Protocolo de crisis no bypasseable](ai-engineer/US-AI-004-crisis-protocol.md) | **Crítica** | `feat/ai/US-AI-004-crisis-protocol` |
+| ID | Historia | Prioridad | Estado | Rama |
+|---|---|---|---|---|
+| US-AI-001 | [Triage con contexto temporal](ai-engineer/US-AI-001-mejora-triage.md) | Alta | ✅ en `dev` (PR #1) | `feat/ai/US-AI-001-triage-temporal` |
+| US-AI-002 | [Hábito sugerido en respuesta](ai-engineer/US-AI-002-suggested-habit.md) | Alta | ✅ en `dev` (PR #2) | `feat/ai/US-AI-002-suggested-habit` |
+| US-AI-003 | [Reporte semanal generado por el agente](ai-engineer/US-AI-003-reporte-semanal.md) | Media | ✅ en `dev` (PR #4) | `feat/ai/US-AI-003-reporte-semanal` |
+| US-AI-004 | [Protocolo de crisis no bypasseable](ai-engineer/US-AI-004-crisis-protocol.md) | **Crítica** | ✅ en `dev` (PR #6) | `feat/ai/US-AI-004-crisis-protocol` |
 
 ---
 
 ## 🎨 Frontend — `web/app/` · `web/components/` · `web/lib/`
 
-| ID | Historia | Prioridad | Rama |
-|---|---|---|---|
-| US-FE-001 | [Dashboard con gráfico semanal](frontend/US-FE-001-dashboard-charts.md) | Alta | `feat/fe/US-FE-001-dashboard-charts` |
-| US-FE-002 | [Mejoras UX del chat](frontend/US-FE-002-chat-mejoras-ux.md) | Alta | `feat/fe/US-FE-002-chat-ux` |
-| US-FE-003 | [Completado de hábito con feedback](frontend/US-FE-003-habit-completion-flow.md) | Media | `feat/fe/US-FE-003-habit-completion` |
-| US-FE-004 | [Vista del reporte semanal](frontend/US-FE-004-vista-reporte-semanal.md) | Media | `feat/fe/US-FE-004-reporte-semanal` |
+> Páginas base (dashboard, chat, habits, onboarding) ya en `dev` desde commit inicial. Las stories representan mejoras encima.
+
+| ID | Historia | Prioridad | Estado | Rama |
+|---|---|---|---|---|
+| US-FE-001 | [Dashboard con gráfico semanal](frontend/US-FE-001-dashboard-charts.md) | Alta | ⚠️ Base ok, gráfico recharts pendiente | `feat/fe/US-FE-001-dashboard-charts` |
+| US-FE-002 | [Mejoras UX del chat](frontend/US-FE-002-chat-mejoras-ux.md) | Alta | ❌ No iniciada | `feat/fe/US-FE-002-chat-ux` |
+| US-FE-003 | [Completado de hábito con feedback](frontend/US-FE-003-habit-completion-flow.md) | Media | ❌ No iniciada | `feat/fe/US-FE-003-habit-completion` |
+| US-FE-004 | [Vista del reporte semanal](frontend/US-FE-004-vista-reporte-semanal.md) | Media | ❌ No iniciada (US-AI-003 ✅ ya lista) | `feat/fe/US-FE-004-reporte-semanal` |
 
 ---
 
 ## 🔌 API & Connections — `api-service/routers/` · `extension/src/` · `web/middleware.ts`
 
-| ID | Historia | Prioridad | Rama |
-|---|---|---|---|
-| US-API-001 | [Endpoint de uso semanal](api-connections/US-API-001-weekly-usage-endpoint.md) | Alta | `feat/api/US-API-001-weekly-usage` |
-| US-API-002 | [Retry con backoff en extensión](api-connections/US-API-002-extension-retry.md) | Alta | `feat/api/US-API-002-extension-retry` |
-| US-API-003 | [Rate limiting en el agente](api-connections/US-API-003-rate-limiting.md) | Media | `feat/api/US-API-003-rate-limiting` |
+> Las 3 stories están implementadas en la rama `feature/apiconections`. **ACCIÓN REQUERIDA:** abrir PR hacia `dev` (hay conflicto en `routers/chat.py` que resolver).
+
+| ID | Historia | Prioridad | Estado | Rama |
+|---|---|---|---|---|
+| US-API-001 | [Endpoint de uso semanal](api-connections/US-API-001-weekly-usage-endpoint.md) | Alta | ⚠️ Listo, pendiente merge | `feature/apiconections` |
+| US-API-002 | [Retry con backoff en extensión](api-connections/US-API-002-extension-retry.md) | Alta | ⚠️ Listo, pendiente merge | `feature/apiconections` |
+| US-API-003 | [Rate limiting en el agente](api-connections/US-API-003-rate-limiting.md) | Media | ⚠️ Listo, pendiente merge | `feature/apiconections` |
 
 ---
 
 ## ⚙️ Backend 1 (ML) — `api-service/services/ml/` · `ml-worker/` · `data/`
 
-| ID | Historia | Prioridad | Rama |
-|---|---|---|---|
-| US-ML-001 | [Pipeline Isolation Forest](backend-1-ml/US-ML-001-isolation-forest.md) | Alta | `feat/ml/US-ML-001-isolation-forest` |
-| US-ML-002 | [XGBoost predictor de ánimo](backend-1-ml/US-ML-002-xgboost-mood.md) | Media | `feat/ml/US-ML-002-xgboost-mood` |
+> ⚠️ **Directorio `ml-worker/` no existe.** Estas stories deben crear el servicio desde cero.
+
+| ID | Historia | Prioridad | Estado | Rama |
+|---|---|---|---|---|
+| US-ML-001 | [Pipeline Isolation Forest](backend-1-ml/US-ML-001-isolation-forest.md) | Alta | ❌ No iniciada | `feat/ml/US-ML-001-isolation-forest` |
+| US-ML-002 | [XGBoost predictor de ánimo](backend-1-ml/US-ML-002-xgboost-mood.md) | Media | ❌ No iniciada (depende de ML-001) | `feat/ml/US-ML-002-xgboost-mood` |
 
 ---
 
 ## 🗄️ Backend 2 (Data) — `api-service/services/` · `infra/supabase/`
 
-| ID | Historia | Prioridad | Rama |
-|---|---|---|---|
-| US-DATA-001 | [Streaks con grace days](backend-2-data/US-DATA-001-streak-logic.md) | Alta | `feat/data/US-DATA-001-streak-logic` |
-| US-DATA-002 | [Índices de performance](backend-2-data/US-DATA-002-indices-performance.md) | Media | `mig/002-performance-indices` |
-| US-DATA-003 | [Tabla de notificaciones](backend-2-data/US-DATA-003-notifications-table.md) | Baja | `feat/data/US-DATA-003-notifications` |
+| ID | Historia | Prioridad | Estado | Rama |
+|---|---|---|---|---|
+| US-DATA-001 | [Streaks con grace days](backend-2-data/US-DATA-001-streak-logic.md) | Alta | ❓ Estado desconocido | `feat/data/US-DATA-001-streak-logic` |
+| US-DATA-002 | [Índices de performance](backend-2-data/US-DATA-002-indices-performance.md) | Media | ❓ Estado desconocido | `mig/002-performance-indices` |
+| US-DATA-003 | [Tabla de notificaciones](backend-2-data/US-DATA-003-notifications-table.md) | Baja | ❓ Estado desconocido | `feat/data/US-DATA-003-notifications` |
 
 ---
 

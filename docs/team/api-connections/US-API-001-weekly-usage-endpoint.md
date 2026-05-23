@@ -1,9 +1,12 @@
 # US-API-001 — Endpoint de uso semanal por día
 
+> ⚠️ **IMPLEMENTADO — pendiente merge a dev** — Código listo en rama `feature/apiconections`. Necesita PR hacia `dev`. Ver plan maestro: `docs/plans/2026-05-23-implementacion-pendiente.md`
+
 **Asignado a:** API & Connections  
 **Prioridad:** Alta  
 **Estimación:** 2 puntos  
 **Rama:** `feat/api/US-API-001-weekly-usage`  
+**Estado:** ⚠️ Código en `feature/apiconections` — abrir PR hacia `dev`  
 **Requerido por:** US-FE-001 (Frontend)
 
 ---
@@ -43,10 +46,10 @@
 
 ## Criterios de aceptación
 
-- [ ] Retorna exactamente 7 días (rellena con 0 si no hay datos)
-- [ ] El campo `label` usa abreviación en español (Lun, Mar, Mié, Jue, Vie, Sáb, Dom)
-- [ ] Requiere JWT válido (usa `Depends(get_current_user)`)
-- [ ] Timeout de query < 500ms con índice en `usage_events.timestamp`
+- [x] Retorna exactamente 7 días (rellena con 0 si no hay datos)
+- [x] El campo `label` usa abreviación en español (Lun, Mar, Mié, Jue, Vie, Sáb, Dom)
+- [x] Requiere JWT válido (usa `Depends(get_current_user)`)
+- [ ] Timeout de query < 500ms con índice en `usage_events.timestamp` (verificar al mergear)
 
 ---
 
@@ -86,7 +89,7 @@ async def weekly_usage(user_id: str = Depends(get_current_user)):
 
 ## Definition of Done
 
-- [ ] Endpoint en `/api/v1/dashboard/weekly-usage`
-- [ ] Test con datos seed
-- [ ] Notificar a Frontend en el issue de Linear cuando esté en `dev`
-- [ ] PR → `dev`
+- [x] Endpoint en `/api/v1/dashboard/weekly-usage` (en `feature/apiconections`)
+- [ ] Test con datos seed — **pendiente verificar**
+- [ ] **ACCIÓN REQUERIDA:** Abrir PR desde `feature/apiconections` → `dev` (cuidado con conflicto en `routers/chat.py`)
+- [ ] Notificar a Frontend cuando esté en `dev`

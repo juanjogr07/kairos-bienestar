@@ -1,8 +1,25 @@
 # Kairós — Plan de Implementación Pendiente
 
-> **Fecha:** 2026-05-23  
+> **Fecha:** 2026-05-23 | **Última actualización:** 2026-05-23  
 > **Base:** Gap analysis contra spec `docs/superpowers/specs/2026-05-23-kairos-bienestar-design.md` y planes individuales `docs/superpowers/plans/`  
-> **Estado actual:** MVP parcial — servicios base corriendo, RAG vacío, extension sin manifest, ml-worker inexistente
+> **Estado actual:** ~55% hacia demo MVP — agent-service completo (4/4 stories), extension en dev, web base en dev, API-connections done (pendiente merge), ML worker inexistente
+
+---
+
+## Porcentaje de completitud por área
+
+| Área | Stories | Completadas | % | Notas |
+|---|---|---|---|---|
+| Agent-service (AI) | 4 | 4 | **100%** | ✅ Todas en `dev` |
+| API & Connections | 3 | 3 | **75%** | ⚠️ Hechas, pendiente merge a `dev` |
+| Extension Chrome | — | — | **85%** | ✅ Base en `dev`, retry pending merge |
+| Web Frontend | 4 | 0 | **40%** | ⚠️ Páginas base en `dev`, stories no completas |
+| Playbooks/RAG | 8 playbooks | 5 | **30%** | ❌ 3 playbooks faltantes, tabla vacía |
+| ML Worker | 2 | 0 | **0%** | ❌ Directorio no existe |
+| Backend-2 Data | 3 | 0 | **?%** | ❓ Estado desconocido |
+| **TOTAL** | | | **~55%** | |
+
+---
 
 ---
 
@@ -10,37 +27,44 @@
 
 | Componente | Archivo clave | Estado |
 |---|---|---|
-| agent-service orchestrator | `agent-service/agent/orchestrator.py` | ✅ Completo (OpenRouter) |
+| agent-service orchestrator | `agent-service/agent/orchestrator.py` | ✅ Completo — suggested_habit + crisis guardrail |
 | agent-service triage tree | `agent-service/triage/tree.py` | ✅ Completo + improving level (US-AI-001) |
 | agent-service 4 tools | `agent-service/agent/tools/` | ✅ Completo |
 | agent-service RAG embedder | `agent-service/rag/embedder.py` | ✅ Código listo |
 | agent-service RAG retriever | `agent-service/rag/retriever.py` | ✅ Código listo |
 | agent-service HTTP routers | `agent-service/routers/chat.py` | ✅ Completo |
-| agent-service tests triage | `agent-service/tests/test_triage.py` | ✅ 26 tests passing |
+| agent-service weekly report | `agent-service/agent/orchestrator.py` | ✅ Completo — gate 3 días (US-AI-003) |
+| agent-service crisis guardrail | `agent-service/agent/orchestrator.py` | ✅ Completo — Línea 106 pre-LLM (US-AI-004) |
+| agent-service tests | `agent-service/tests/` | ✅ 55+ tests (4 suites) |
 | api-service auth + JWT | `api-service/auth.py` | ✅ Completo |
 | api-service events batch | `api-service/routers/events.py` | ✅ Completo |
 | api-service surveys | `api-service/routers/surveys.py` | ✅ Completo |
 | api-service dashboard | `api-service/routers/dashboard.py` | ✅ Completo |
 | api-service habits + streaks | `api-service/routers/habits.py` | ✅ Completo |
 | api-service tests | `api-service/tests/` | ✅ 5 suites |
+| api-service weekly-usage endpoint | `api-service/routers/dashboard.py` | ⚠️ Listo en `feature/apiconections` — pendiente merge |
+| api-service rate limiting | `agent-service/rate_limit.py` | ⚠️ Listo en `feature/apiconections` — pendiente merge |
+| extension manifest.json | `extension/manifest.json` | ✅ Existe en `dev` (commit inicial) |
+| extension popup | `extension/src/popup/` | ✅ Existe en `dev` (commit inicial) |
+| extension tab tracker | `extension/src/background/tab-tracker.ts` | ✅ Completo |
+| extension scroll detector | `extension/src/content-scripts/scroll-detector.ts` | ✅ Completo |
+| extension buffer | `extension/src/storage/buffer.ts` | ✅ Completo |
+| extension retry backoff | `extension/src/background/sync.ts` | ⚠️ Listo en `feature/apiconections` — pendiente merge |
 | web onboarding PHQ-9/GAD-7 | `web/app/onboarding/` | ✅ Completo |
-| web dashboard | `web/app/dashboard/page.tsx` | ✅ Básico |
+| web dashboard | `web/app/dashboard/page.tsx` | ✅ Básico (sin gráfico recharts — pendiente US-FE-001) |
 | web chat | `web/app/chat/page.tsx` | ✅ Básico |
 | web habits | `web/app/habits/page.tsx` | ✅ Básico |
-| extension tab tracker | `extension/src/background/` | ✅ Completo |
-| extension scroll detector | `extension/src/content-scripts/` | ✅ Completo |
-| extension buffer | `extension/src/storage/buffer.ts` | ✅ Completo |
-| **playbook_chunks poblado** | Supabase table | ❌ VACÍO — RAG roto |
-| **match_playbook_chunks SQL** | Supabase function | ❌ No ejecutada |
-| **momentum-builder playbook** | `playbooks/processed/momentum-builder.md` | ❌ No existe |
-| **anxiety-indicators playbook** | `playbooks/processed/anxiety-indicators.md` | ❌ No existe |
-| **focus-session-intro playbook** | `playbooks/processed/focus-session-intro.md` | ❌ No existe |
-| **extension manifest.json** | `extension/manifest.json` | ❌ No existe |
-| **extension popup** | `extension/src/popup/` | ❌ No existe |
+| web middleware auth | `web/middleware.ts` | ✅ Completo |
+| **web reports page** | `web/app/reports/` | ❌ No existe — pendiente US-FE-004 |
+| **web recharts chart** | `web/components/weekly-chart.tsx` | ❌ No existe — pendiente US-FE-001 |
+| **playbook_chunks poblado** | Supabase table | ❌ VACÍO — RAG roto — ver Fase 0 |
+| **match_playbook_chunks SQL** | Supabase function | ❌ No ejecutada — ver Tarea 0.3 |
+| **momentum-builder playbook** | `playbooks/processed/momentum-builder.md` | ❌ No existe — ver Tarea 0.1 |
+| **anxiety-indicators playbook** | `playbooks/processed/anxiety-indicators.md` | ❌ No existe — ver Tarea 0.2 |
+| **focus-session-intro playbook** | `playbooks/processed/focus-session-intro.md` | ❌ No existe — ver Tarea 0.2 |
 | **extension intervention overlay** | `extension/src/content-scripts/intervention.ts` | ❌ No existe |
-| **web reports page** | `web/app/reports/` | ❌ No existe |
-| **ml-worker servicio** | `ml-worker/` | ❌ Directorio inexistente |
-| **ml seed para demo** | Supabase `ml_results` table | ❌ Vacío → scores 0.0 |
+| **ml-worker servicio** | `ml-worker/` | ❌ Directorio inexistente — pendiente US-ML-001/002 |
+| **ml seed para demo** | Supabase `ml_results` table | ❌ Vacío → scores 0.0 — ver Tarea 0.5 |
 | **infra migrations** | `infra/supabase/migrations/` | ❌ No versionadas |
 
 ---

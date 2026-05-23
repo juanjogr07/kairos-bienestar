@@ -1,10 +1,13 @@
 # US-FE-004 — Vista del reporte semanal
 
+> ❌ **NO IMPLEMENTADO** — La página `/report` no existe aún. US-AI-003 ya está en `dev` — puedes comenzar esta historia. Ver plan maestro: `docs/plans/2026-05-23-implementacion-pendiente.md`
+
 **Asignado a:** Frontend  
 **Prioridad:** Media  
 **Estimación:** 2 puntos  
 **Rama:** `feat/fe/US-FE-004-reporte-semanal`  
-**Depende de:** US-AI-003 (AI Engineer debe completar primero)
+**Depende de:** US-AI-003 ✅ (ya en `dev`)  
+**Estado:** ❌ No iniciada
 
 ---
 
