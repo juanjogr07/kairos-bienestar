@@ -1,5 +1,6 @@
 import json
-from openai import OpenAI
+from openai import OpenAI, APIError, AuthenticationError
+from fastapi import HTTPException
 from config import settings
 from triage.tree import run_triage
 from agent.tools.get_usage_summary import get_usage_summary
@@ -127,12 +128,17 @@ def chat(user_id: str, message: str) -> dict:
     final_text = ""
 
     while True:
-        response = client.chat.completions.create(
-            model=MODEL,
-            max_tokens=1024,
-            tools=TOOLS,
-            messages=messages,
-        )
+        try:
+            response = client.chat.completions.create(
+                model=MODEL,
+                max_tokens=1024,
+                tools=TOOLS,
+                messages=messages,
+            )
+        except AuthenticationError as exc:
+            raise HTTPException(status_code=503, detail="LLM service authentication failed — check API key") from exc
+        except APIError as exc:
+            raise HTTPException(status_code=503, detail=f"LLM service error: {exc.message}") from exc
 
         choice = response.choices[0]
 
