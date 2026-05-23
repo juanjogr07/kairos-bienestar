@@ -24,6 +24,49 @@ class DashboardResponse(BaseModel):
     onboarding_completed: bool
 
 
+class WeeklyUsageDay(BaseModel):
+    day: str
+    label: str
+    minutes: int
+
+
+@router.get("/dashboard/weekly-usage", response_model=List[WeeklyUsageDay])
+async def weekly_usage(user_id: str = Depends(get_current_user)):
+    """Retorna el uso digital del usuario agrupado por día de los últimos 7 días.
+
+    Siempre devuelve exactamente 7 items (del más antiguo al más reciente),
+    rellenando con 0 los días sin datos.
+    """
+    today = date.today()
+    days = [(today - timedelta(days=i)) for i in range(6, -1, -1)]
+
+    labels = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
+
+    res = (
+        supabase.table("usage_events")
+        .select("timestamp, duration_seconds")
+        .eq("user_id", user_id)
+        .gte("timestamp", days[0].isoformat())
+        .execute()
+    )
+
+    # Agrupar segundos por día
+    day_totals: dict[str, int] = {d.isoformat(): 0 for d in days}
+    for ev in res.data:
+        day_key = ev["timestamp"][:10]
+        if day_key in day_totals:
+            day_totals[day_key] += ev["duration_seconds"]
+
+    return [
+        WeeklyUsageDay(
+            day=d.isoformat(),
+            label=labels[d.weekday()],
+            minutes=day_totals[d.isoformat()] // 60,
+        )
+        for d in days
+    ]
+
+
 @router.get("/dashboard", response_model=DashboardResponse)
 async def get_dashboard(user_id: str = Depends(get_current_user)):
     today = date.today().isoformat()
