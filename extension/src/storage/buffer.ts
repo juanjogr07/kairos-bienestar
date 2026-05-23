@@ -47,3 +47,10 @@ export async function getDailyStats(): Promise<Record<string, number>> {
   }
   return stats
 }
+
+// El contador de reintentos vive en memoria como argumento `attempt` de
+// `syncWithRetry` (extension/src/background/sync.ts). Cada ciclo de alarm
+// arranca con attempt=0 y reintenta hasta 3 veces dentro del mismo
+// invoke. Si los 3 fallan, el buffer se preserva intacto y el siguiente
+// ciclo (~5 min) vuelve a intentar — equivalente a reiniciar el contador.
+
