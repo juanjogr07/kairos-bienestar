@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Plus, Check, Flame, X, Sparkles } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { getHabits, completeHabit, createHabit, type Habit as APIHabit } from "@/lib/api";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 interface Habit {
@@ -16,80 +15,91 @@ interface Habit {
   freq: "daily" | "weekly";
 }
 
-function fromAPI(h: APIHabit): Habit {
-  return {
-    id: h.id,
-    name: h.name,
-    streak: h.current_streak,
-    best: h.current_streak, // API doesn't expose longest_streak yet
-    done: h.completed_today,
-    recommended: !!h.playbook_slug,
-    freq: h.frequency,
-  };
-}
+const INITIAL: Habit[] = [
+  {
+    id: "1",
+    name: "Sin teléfono la primera hora del día",
+    streak: 3,
+    best: 5,
+    done: false,
+    freq: "daily",
+  },
+  {
+    id: "2",
+    name: "10 min de respiración consciente",
+    streak: 5,
+    best: 5,
+    done: true,
+    freq: "daily",
+    recommended: true,
+  },
+  {
+    id: "3",
+    name: "Caminar al sol 15 min",
+    streak: 1,
+    best: 4,
+    done: false,
+    freq: "daily",
+  },
+  {
+    id: "4",
+    name: "Lectura sin pantallas antes de dormir",
+    streak: 2,
+    best: 7,
+    done: true,
+    freq: "daily",
+  },
+];
 
 export default function HabitsPage() {
   const { checking } = useRequireAuth();
-  const [habits, setHabits] = useState<Habit[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [habits, setHabits] = useState<Habit[]>(INITIAL);
   const [showSheet, setShowSheet] = useState(false);
   const [name, setName] = useState("");
   const [freq, setFreq] = useState<"daily" | "weekly">("daily");
 
-  useEffect(() => {
-    getHabits().then((hs) => {
-      setHabits(hs.map(fromAPI));
-      setLoading(false);
-    });
-  }, []);
-
-  if (checking) return <div className="flex h-screen items-center justify-center"><span className="h-6 w-6 animate-spin rounded-full border-2 border-accent-secondary border-t-transparent" /></div>;
-
   const completed = habits.filter((h) => h.done).length;
 
-  const handleComplete = async (id: string, btn: HTMLButtonElement | null) => {
-    // Optimistic update
+  const handleComplete = (id: string, btn: HTMLButtonElement | null) => {
     setHabits((hs) =>
       hs.map((h) =>
-        h.id === id ? { ...h, done: true, streak: h.streak + 1 } : h
+        h.id === id
+          ? {
+              ...h,
+              done: !h.done,
+              streak: !h.done ? h.streak + 1 : Math.max(0, h.streak - 1),
+            }
+          : h
       )
     );
+    // Confetti burst
     if (btn) {
       const rect = btn.getBoundingClientRect();
-      spawnConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2);
-    }
-    try {
-      const { streak } = await completeHabit(id);
-      setHabits((hs) =>
-        hs.map((h) => (h.id === id ? { ...h, streak } : h))
-      );
-    } catch {
-      // revert on error
-      setHabits((hs) =>
-        hs.map((h) =>
-          h.id === id ? { ...h, done: false, streak: h.streak - 1 } : h
-        )
-      );
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      spawnConfetti(cx, cy);
     }
   };
 
-  const handleCreate = async () => {
+  const handleCreate = () => {
     if (!name.trim()) return;
-    const trimmed = name.trim();
-    try {
-      const newHabit = await createHabit(trimmed, freq);
-      setHabits((hs) => [fromAPI(newHabit), ...hs]);
-    } catch {
-      // fallback: add locally
-      setHabits((hs) => [
-        { id: String(Date.now()), name: trimmed, streak: 0, best: 0, done: false, freq },
-        ...hs,
-      ]);
-    }
+    setHabits((hs) => [
+      {
+        id: String(Date.now()),
+        name: name.trim(),
+        streak: 0,
+        best: 0,
+        done: false,
+        freq,
+      },
+      ...hs,
+    ]);
     setName("");
     setFreq("daily");
     setShowSheet(false);
   };
+
+  if (checking) return <div className="flex h-screen items-center justify-center"><span className="h-6 w-6 animate-spin rounded-full border-2 border-accent-secondary border-t-transparent" /></div>;
 
   return (
     <AppShell>
@@ -99,14 +109,10 @@ export default function HabitsPage() {
             Mis hábitos
           </h1>
           <p className="mt-1 text-sm text-text-secondary">
-            {loading ? (
-              <span className="inline-block h-4 w-32 animate-pulse rounded bg-bg-surface" />
-            ) : (
-              <>
-                {habits.length} activos ·{" "}
-                <span className="text-accent-primary">{completed} completados hoy</span>
-              </>
-            )}
+            {habits.length} activos ·{" "}
+            <span className="text-accent-primary">
+              {completed} completados hoy
+            </span>
           </p>
         </div>
         <button

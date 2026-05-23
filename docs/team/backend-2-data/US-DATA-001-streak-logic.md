@@ -1,9 +1,12 @@
 # US-DATA-001 — Lógica de streaks con grace days
 
+> ✅ **IMPLEMENTADO** — `api-service/services/streak_engine.py` con grace days en `dev`. Tests en `api-service/tests/test_streak_engine.py`. Ver plan maestro: `docs/plans/2026-05-23-implementacion-pendiente.md`
+
 **Asignado a:** Backend 2 (Data)  
 **Prioridad:** Alta  
 **Estimación:** 3 puntos  
-**Rama:** `feat/data/US-DATA-001-streak-logic`
+**Rama:** `api-service/services/` (mergeado en commit inicial de backend)  
+**Estado:** ✅ Mergeado en `dev`
 
 ---
 

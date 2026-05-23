@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, ArrowLeft, Sparkles, Check } from "lucide-react";
+import { ArrowRight, ArrowLeft, Sparkles, Check, AlertCircle } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { submitSurvey } from "@/lib/api";
 
 const PHQ9: string[] = [
@@ -47,6 +48,9 @@ export default function OnboardingPage() {
     Array(7).fill(null)
   );
   const router = useRouter();
+  const { checking } = useRequireAuth();
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const questions = phase === "phq9" ? PHQ9 : GAD7;
   const answers = phase === "phq9" ? phqAnswers : gadAnswers;
@@ -57,6 +61,8 @@ export default function OnboardingPage() {
     phase === "phq9"
       ? "En las últimas 2 semanas, ¿con qué frecuencia te has sentido afectado/a por…"
       : "En las últimas 2 semanas, ¿con qué frecuencia te has sentido afectado/a por…";
+
+  if (checking) return <div className="flex h-screen items-center justify-center"><span className="h-6 w-6 animate-spin rounded-full border-2 border-accent-secondary border-t-transparent" /></div>;
 
   if (phase === "complete") {
     const phqScore = phqAnswers.reduce<number>((s, v) => s + (v ?? 0), 0);
@@ -113,19 +119,36 @@ export default function OnboardingPage() {
             </div>
           </div>
 
+          {submitError && (
+            <div className="mt-4 flex items-center gap-2 rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">
+              <AlertCircle size={14} className="shrink-0" />
+              {submitError}
+            </div>
+          )}
+
           <button
+            disabled={submitting}
             onClick={async () => {
+              const isCrisis = phqScore >= 15 || gadScore >= 15;
+              setSubmitting(true);
+              setSubmitError(null);
               try {
                 await submitSurvey("phq9", phqAnswers.map((v) => v ?? 0));
                 await submitSurvey("gad7", gadAnswers.map((v) => v ?? 0));
+                setSubmitting(false);
               } catch {
-                // non-blocking — proceed to dashboard regardless
+                setSubmitError(
+                  "No pudimos guardar tus respuestas. Continuando..."
+                );
+                await new Promise((r) => setTimeout(r, 1500));
+                setSubmitting(false);
+              } finally {
+                router.push(isCrisis ? "/crisis" : "/dashboard");
               }
-              router.push("/dashboard");
             }}
-            className="group mt-8 inline-flex items-center justify-center gap-2 rounded-md bg-gradient-cta px-8 py-3.5 font-bold text-bg-deep shadow-glow-green transition-transform hover:scale-[1.02]"
+            className="group mt-8 inline-flex items-center justify-center gap-2 rounded-md bg-gradient-cta px-8 py-3.5 font-bold text-bg-deep shadow-glow-green transition-transform hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100"
           >
-            Ir a tu Dashboard
+            {submitting ? "Guardando..." : "Ir a tu Dashboard"}
             <ArrowRight size={18} strokeWidth={2.5} />
           </button>
         </div>

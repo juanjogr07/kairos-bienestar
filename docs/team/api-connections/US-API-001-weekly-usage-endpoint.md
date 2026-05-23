@@ -1,10 +1,13 @@
 # US-API-001 — Endpoint de uso semanal por día
 
+> ✅ **IMPLEMENTADO** — Mergeado en `dev` vía `main` (commit `212fa22`). Ver plan maestro: `docs/plans/2026-05-23-implementacion-pendiente.md`
+
 **Asignado a:** API & Connections  
 **Prioridad:** Alta  
 **Estimación:** 2 puntos  
-**Rama:** `feat/api/US-API-001-weekly-usage`  
-**Requerido por:** US-FE-001 (Frontend)
+**Rama:** `feature/apiconections`  
+**Estado:** ✅ Mergeado en `dev`  
+**Requerido por:** US-FE-001 (Frontend) — endpoint listo para conectar
 
 ---
 
@@ -43,10 +46,10 @@
 
 ## Criterios de aceptación
 
-- [ ] Retorna exactamente 7 días (rellena con 0 si no hay datos)
-- [ ] El campo `label` usa abreviación en español (Lun, Mar, Mié, Jue, Vie, Sáb, Dom)
-- [ ] Requiere JWT válido (usa `Depends(get_current_user)`)
-- [ ] Timeout de query < 500ms con índice en `usage_events.timestamp`
+- [x] Retorna exactamente 7 días (rellena con 0 si no hay datos)
+- [x] El campo `label` usa abreviación en español (Lun, Mar, Mié, Jue, Vie, Sáb, Dom)
+- [x] Requiere JWT válido (usa `Depends(get_current_user)`)
+- [ ] Timeout de query < 500ms con índice en `usage_events.timestamp` (verificar al mergear)
 
 ---
 
@@ -86,7 +89,7 @@ async def weekly_usage(user_id: str = Depends(get_current_user)):
 
 ## Definition of Done
 
-- [ ] Endpoint en `/api/v1/dashboard/weekly-usage`
-- [ ] Test con datos seed
-- [ ] Notificar a Frontend en el issue de Linear cuando esté en `dev`
-- [ ] PR → `dev`
+- [x] Endpoint en `/api/v1/dashboard/weekly-usage`
+- [x] Test con datos seed (`api-service/tests/test_dashboard.py`)
+- [x] Mergeado en `dev`
+- [ ] **PENDIENTE:** Frontend conectar con el endpoint real (actualmente usa mock data)

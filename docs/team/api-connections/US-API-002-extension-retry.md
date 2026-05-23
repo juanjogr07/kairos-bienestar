@@ -1,9 +1,12 @@
 # US-API-002 — Retry con backoff en sync de la extensión
 
+> ✅ **IMPLEMENTADO** — Mergeado en `dev` vía `main` (commit `018e3fe`). Ver plan maestro: `docs/plans/2026-05-23-implementacion-pendiente.md`
+
 **Asignado a:** API & Connections  
 **Prioridad:** Alta  
 **Estimación:** 2 puntos  
-**Rama:** `feat/api/US-API-002-extension-retry`
+**Rama:** `feature/apiconections`  
+**Estado:** ✅ Mergeado en `dev`
 
 ---
 
@@ -26,11 +29,11 @@
 
 ## Criterios de aceptación
 
-- [ ] Máximo 3 reintentos por sync fallido
-- [ ] Delay entre reintentos: 5s, 15s, 45s (backoff exponencial)
-- [ ] Si los 3 reintentos fallan, los eventos se quedan en buffer para el próximo ciclo (5 min)
-- [ ] Log en `console.error` con el error y número de reintento
-- [ ] Si el servidor retorna 401, NO reintentar (token inválido — no tiene sentido)
+- [x] Máximo 3 reintentos por sync fallido
+- [x] Delay entre reintentos: 5s, 15s, 45s (backoff exponencial)
+- [x] Si los 3 reintentos fallan, los eventos se quedan en buffer para el próximo ciclo (5 min)
+- [x] Log en `console.error` con el error y número de reintento
+- [x] Si el servidor retorna 401, NO reintentar (token inválido — no tiene sentido)
 
 ---
 
@@ -75,7 +78,7 @@ async function syncWithRetry(events: UsageEvent[], attempt = 0): Promise<void> {
 
 ## Definition of Done
 
-- [ ] Retry implementado con los 3 delays
-- [ ] 401 no reintenta
-- [ ] PR → `dev`
-- [ ] Build de extensión: `npm run build` sin errores
+- [x] Retry implementado con los 3 delays (`extension/src/background/sync.ts`)
+- [x] 401 no reintenta
+- [x] Mergeado en `dev`
+- [ ] Build de extensión: `npm run build` sin errores — **pendiente verificar en local**

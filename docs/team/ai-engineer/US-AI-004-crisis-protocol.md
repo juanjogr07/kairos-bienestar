@@ -1,9 +1,12 @@
 # US-AI-004 — Protocolo de crisis no bypasseable
 
+> ✅ **IMPLEMENTADO** — Mergeado en `dev` (PR #6, commit `c9804e0`). Ver plan maestro: `docs/plans/2026-05-23-implementacion-pendiente.md`
+
 **Asignado a:** AI Engineer  
 **Prioridad:** Crítica  
 **Estimación:** 2 puntos  
-**Rama:** `feat/ai/US-AI-004-crisis-protocol`
+**Rama:** `feat/ai/US-AI-004-crisis-protocol`  
+**Estado:** ✅ Mergeado en `dev`
 
 ---
 
@@ -31,11 +34,11 @@ Actualmente la derivación a crisis depende de que el sistema prompt sea respeta
 
 ## Criterios de aceptación
 
-- [ ] Si `triage_result["level"] == "crisis"`, el agente retorna la respuesta de crisis SIN llamar al LLM
-- [ ] La respuesta de crisis siempre incluye: `"📞 Línea 106 — Salud mental, gratuita, disponible 24 horas."`
-- [ ] El campo `playbook_activated` retorna `"crisis-escalation"`
-- [ ] No importa lo que diga el mensaje del usuario — el guardrail tiene prioridad absoluta
-- [ ] Test que verifica que con PHQ-9 = 18 nunca se llama al LLM
+- [x] Si `triage_result["level"] == "crisis"`, el agente retorna la respuesta de crisis SIN llamar al LLM
+- [x] La respuesta de crisis siempre incluye: `"📞 Línea 106 — Salud mental, gratuita, disponible 24 horas."`
+- [x] El campo `playbook_activated` retorna `"crisis-escalation"`
+- [x] No importa lo que diga el mensaje del usuario — el guardrail tiene prioridad absoluta
+- [x] Test que verifica que con PHQ-9 = 18 nunca se llama al LLM
 
 ---
 
@@ -73,7 +76,7 @@ def chat(user_id: str, message: str) -> dict:
 
 ## Definition of Done
 
-- [ ] Guardrail implementado y testeado
-- [ ] Test verifica que `client.chat.completions.create` NO es llamado en modo crisis
-- [ ] PR → `dev` con revisión obligatoria del lead antes de mergear
-- [ ] Documentar en el README del agent-service
+- [x] Guardrail implementado y testeado (11 tests en `tests/test_crisis_guardrail.py`)
+- [x] Test verifica que `client.chat.completions.create` NO es llamado en modo crisis
+- [x] PR → `dev` (PR #6, con revisión antes del merge)
+- [ ] **PENDIENTE:** Documentar en el README del agent-service

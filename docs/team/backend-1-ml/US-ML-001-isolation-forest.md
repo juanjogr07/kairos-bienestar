@@ -1,9 +1,12 @@
 # US-ML-001 — Pipeline de Isolation Forest para detección de anomalías
 
+> ⚠️ **SCAFFOLDING LISTO** — `ml-worker/` creado (KAI-49: `__init__.py`, `requirements.txt`, `tests/__init__.py`). `data/synthetic/generate_seed.py` disponible. **El modelo real no está implementado.** Empezar aquí. Ver plan maestro: `docs/plans/2026-05-23-implementacion-pendiente.md`
+
 **Asignado a:** Backend 1 (ML Worker)  
 **Prioridad:** Alta  
 **Estimación:** 5 puntos  
-**Rama:** `feat/ml/US-ML-001-isolation-forest`
+**Rama:** `feat/ml/US-ML-001-isolation-forest`  
+**Estado:** ⚠️ Scaffolding en `dev` — modelo no implementado
 
 ---
 
