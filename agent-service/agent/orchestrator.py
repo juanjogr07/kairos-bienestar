@@ -6,6 +6,8 @@ from triage.tree import run_triage
 from agent.tools.get_usage_summary import get_usage_summary
 from agent.tools.get_survey_scores import get_survey_scores
 from agent.tools.get_ml_scores import get_ml_scores
+from agent.tools.get_anomaly_flags import get_anomaly_flags
+from agent.tools.get_forecast import get_forecast
 from agent.tools.search_playbooks import search_playbooks
 from agent import memory as mem
 
@@ -48,7 +50,34 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "get_ml_scores",
-            "description": "Obtiene los scores de los modelos ML: attention_fragmentation, nocturnal_pattern, doomscrolling.",
+            "description": "Obtiene los scores ML del usuario: attention_fragmentation, nocturnal_pattern, doomscrolling, anomaly_flag, cluster_name. Usar cuando el usuario pregunte sobre sus patrones digitales.",
+            "parameters": {
+                "type": "object",
+                "properties": {"user_id": {"type": "string"}},
+                "required": ["user_id"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_anomaly_flags",
+            "description": "Obtiene los días atípicos detectados por el modelo Isolation Forest en los últimos N días. Usar cuando el usuario pregunte sobre días inusuales o picos de uso.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "user_id": {"type": "string"},
+                    "days": {"type": "integer", "default": 7},
+                },
+                "required": ["user_id"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_forecast",
+            "description": "Obtiene la predicción Prophet de uso digital para los próximos 7 días y el score de riesgo de recaída. Usar cuando el usuario pregunte sobre tendencias futuras.",
             "parameters": {
                 "type": "object",
                 "properties": {"user_id": {"type": "string"}},
@@ -108,15 +137,24 @@ Tono: cálido, motivador, sin juicios. Máximo 300 palabras. Habla en español."
 
 SYSTEM_PROMPT = """Eres Kairós, un copiloto de bienestar digital. Tu rol es ayudar a las personas a entender sus patrones de uso digital y acompañarlas hacia mayor bienestar.
 
+HERRAMIENTAS DISPONIBLES:
+- get_usage_summary: uso digital reciente (minutos, top apps, promedio diario)
+- get_survey_scores: PHQ-9 (ánimo) y GAD-7 (ansiedad) del usuario
+- get_ml_scores: señales ML — doomscrolling, patrón nocturno, fragmentación de atención, perfil de uso (cluster)
+- get_anomaly_flags: días atípicos detectados por modelos de anomalías
+- get_forecast: predicción de uso a 7 días y riesgo de recaída (Prophet)
+- search_playbooks: buscar intervenciones basadas en evidencia (SIEMPRE antes de recomendar)
+
 REGLAS CRÍTICAS:
 1. NUNCA diagnostiques: no digas "tienes depresión", "tienes ansiedad", "tienes ADHD". Usa palabras como "señales", "patrones", "indicadores".
 2. SIEMPRE usa search_playbooks antes de dar recomendaciones de hábitos o intervenciones.
 3. Si el usuario muestra señales de crisis (phq9 >= 15 o gad7 >= 15), deriva INMEDIATAMENTE: "📞 Línea 106 — Salud mental, gratuita, 24 horas."
-4. Compara siempre contra el historial propio del usuario, nunca contra otros.
+4. Compara siempre contra el historial propio del usuario, nunca contra otros usuarios.
 5. Usa un tono cálido, sin juicios, compasivo.
 6. Respuestas concisas: máximo 3-4 párrafos.
 7. Habla siempre en español.
-8. Si sugieres un hábito específico, añade al final de tu respuesta exactamente esta línea:
+8. Cuando menciones scores ML, explica en lenguaje humano qué significan (ej: "pasas mucho tiempo en redes sociales de noche" en vez de "nocturnal_pattern_score = 0.71").
+9. Si sugieres un hábito específico, añade al final de tu respuesta exactamente esta línea:
 HÁBITO_SUGERIDO: <nombre del hábito, máximo 5 palabras>
 Esta línea no la ve el usuario — es solo para el sistema. No la incluyas si no sugieres un hábito concreto."""
 
@@ -129,6 +167,10 @@ def _execute_tool(tool_name: str, tool_input: dict) -> str:
             result = get_survey_scores(**tool_input)
         elif tool_name == "get_ml_scores":
             result = get_ml_scores(**tool_input)
+        elif tool_name == "get_anomaly_flags":
+            result = get_anomaly_flags(**tool_input)
+        elif tool_name == "get_forecast":
+            result = get_forecast(**tool_input)
         elif tool_name == "search_playbooks":
             result = search_playbooks(**tool_input)
         else:

@@ -28,12 +28,21 @@ def _ml_zero():
 def _usage_empty():
     return {"top_domains": [], "today_minutes": 0, "avg_daily_minutes": 0, "days_with_data": 0}
 
-def _run(surveys, ml=None, usage=None):
+def _forecast(relapse_risk=0.0, trend="stable"):
+    return {
+        "relapse_risk_score": relapse_risk,
+        "trend_direction": trend,
+        "has_forecast": relapse_risk > 0,
+    }
+
+def _run(surveys, ml=None, usage=None, forecast=None):
     ml = ml or _ml_zero()
     usage = usage or _usage_empty()
+    forecast = forecast or _forecast()
     with patch.object(triage_tree, "get_survey_scores", return_value=surveys), \
          patch.object(triage_tree, "get_ml_scores", return_value=ml), \
-         patch.object(triage_tree, "get_usage_summary", return_value=usage):
+         patch.object(triage_tree, "get_usage_summary", return_value=usage), \
+         patch.object(triage_tree, "_safe_get_forecast", return_value=forecast):
         return triage_tree.run_triage("user-1")
 
 
@@ -218,3 +227,81 @@ def test_improving_takes_priority_over_digital():
     ml = {**_ml_zero(), "doomscrolling_score": 0.90, "has_ml_data": True}
     result = _run(_surveys(phq9=7, phq9_prev=11), ml=ml)
     assert result["level"] == "improving"
+
+
+# ─── NIVEL 4: relapse_risk (Prophet) ─────────────────────────────────────────
+
+def test_relapse_risk_activates_above_threshold():
+    """relapse_risk_score > 0.5 activa nivel relapse_risk."""
+    result = _run(_surveys(), forecast=_forecast(relapse_risk=0.65, trend="increasing"))
+    assert result["level"] == "relapse_risk"
+    assert result["playbook_slug"] == "habit-relapse-risk"
+
+
+def test_relapse_risk_not_activated_at_threshold():
+    """relapse_risk_score = 0.5 NO activa (umbral > 0.5)."""
+    result = _run(_surveys(), forecast=_forecast(relapse_risk=0.5, trend="increasing"))
+    assert result["level"] == "default"
+
+
+def test_relapse_risk_not_activated_below_threshold():
+    """relapse_risk_score = 0.3 → default."""
+    result = _run(_surveys(), forecast=_forecast(relapse_risk=0.3))
+    assert result["level"] == "default"
+
+
+def test_mood_takes_priority_over_relapse():
+    """PHQ-9 en rango mood + relapse_risk alto → mood gana."""
+    result = _run(_surveys(phq9=9), forecast=_forecast(relapse_risk=0.8))
+    assert result["level"] == "mood"
+
+
+def test_relapse_takes_priority_over_digital():
+    """relapse_risk alto + doomscrolling alto → relapse_risk gana."""
+    ml = {**_ml_zero(), "doomscrolling_score": 0.90}
+    result = _run(_surveys(), ml=ml, forecast=_forecast(relapse_risk=0.7))
+    assert result["level"] == "relapse_risk"
+
+
+def test_relapse_reason_contains_trend():
+    """La razón del triaje relapse_risk menciona la tendencia."""
+    result = _run(_surveys(), forecast=_forecast(relapse_risk=0.72, trend="increasing"))
+    assert "increasing" in result["reason"]
+    assert "0.72" in result["reason"]
+
+
+# ─── NIVEL 6: anomaly ────────────────────────────────────────────────────────
+
+def test_anomaly_activates_when_flag_and_high_severity():
+    """anomaly_flag=True + anomaly_severity > 0.75 → nivel anomaly."""
+    ml = {**_ml_zero(), "anomaly_flag": True, "anomaly_severity": 0.85, "flagged_features": ["nocturnal_min"]}
+    result = _run(_surveys(), ml=ml)
+    assert result["level"] == "anomaly"
+
+
+def test_anomaly_not_activated_without_flag():
+    """anomaly_severity alto sin anomaly_flag → no activa anomaly."""
+    ml = {**_ml_zero(), "anomaly_flag": False, "anomaly_severity": 0.90}
+    result = _run(_surveys(), ml=ml)
+    assert result["level"] == "default"
+
+
+def test_anomaly_not_activated_below_severity_threshold():
+    """anomaly_flag=True pero severity ≤ 0.75 → no activa anomaly."""
+    ml = {**_ml_zero(), "anomaly_flag": True, "anomaly_severity": 0.75}
+    result = _run(_surveys(), ml=ml)
+    assert result["level"] == "default"
+
+
+def test_digital_takes_priority_over_anomaly():
+    """doomscrolling alto + anomaly → digital gana (digital se chequea primero)."""
+    ml = {**_ml_zero(), "doomscrolling_score": 0.80, "anomaly_flag": True, "anomaly_severity": 0.90}
+    result = _run(_surveys(), ml=ml)
+    assert result["level"] == "digital"
+
+
+def test_crisis_takes_priority_over_anomaly():
+    """crisis siempre gana sobre anomaly."""
+    ml = {**_ml_zero(), "anomaly_flag": True, "anomaly_severity": 0.95}
+    result = _run(_surveys(crisis=True, phq9=18), ml=ml)
+    assert result["level"] == "crisis"

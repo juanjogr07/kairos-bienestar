@@ -1,28 +1,64 @@
 from database import supabase
-from typing import Optional
 
 
 def get_ml_scores(user_id: str) -> dict:
-    def latest_result(model_type: str) -> Optional[dict]:
-        res = (
-            supabase.table("ml_results")
-            .select("result")
-            .eq("user_id", user_id)
-            .eq("model_type", model_type)
-            .order("computed_at", desc=True)
-            .limit(1)
-            .execute()
-        )
-        return res.data[0]["result"] if res.data else None
+    """Read latest ML pipeline results for a user from ml_results.
 
-    xgb = latest_result("xgboost_mood")
-    iso = latest_result("isolation_forest")
+    Returns field names matching what triage/tree.py and the orchestrator expect.
+    Cold-start safe: returns neutral zeros when no results exist yet.
+    """
+    resp = (
+        supabase.table("ml_results")
+        .select("result,date")
+        .eq("user_id", user_id)
+        .eq("model_type", "full_pipeline")
+        .order("date", desc=True)
+        .limit(1)
+        .execute()
+    )
+
+    if not resp.data:
+        return _neutral()
+
+    result = resp.data[0].get("result", {})
+    triage = result.get("triage", {})
+    anomaly = result.get("anomaly", {})
+    cluster = result.get("cluster", {})
 
     return {
-        "attention_fragmentation_score": xgb.get("attention_fragmentation_score", 0.0) if xgb else 0.0,
-        "nocturnal_pattern_score": xgb.get("nocturnal_pattern_score", 0.0) if xgb else 0.0,
-        "doomscrolling_score": xgb.get("doomscrolling_score", 0.0) if xgb else 0.0,
-        "anomaly_flag": iso.get("is_anomaly", False) if iso else False,
-        "anomaly_severity": abs(iso.get("anomaly_score", 0.0)) if iso else 0.0,
-        "has_ml_data": xgb is not None,
+        # Triage scores — used by triage/tree.py thresholds
+        "attention_fragmentation_score": float(triage.get("attention_fragmentation", 0.0)),
+        "nocturnal_pattern_score": float(triage.get("nocturnal_pattern", 0.0)),
+        "doomscrolling_score": float(triage.get("doomscrolling", 0.0)),
+        "low_mood_score": float(triage.get("low_mood_indicator", 0.0)),
+        "anxiety_score": float(triage.get("anxiety_indicator", 0.0)),
+        # Anomaly — used by triage/tree.py anomaly level
+        "anomaly_flag": bool(anomaly.get("is_anomaly", False)),
+        "anomaly_severity": float(anomaly.get("anomaly_score", 0.0)),
+        "anomaly_risk_level": anomaly.get("risk_level", "low"),
+        "flagged_features": anomaly.get("flagged_features", []),
+        # Cluster — context for orchestrator system prompt
+        "cluster_name": cluster.get("cluster_name", "unknown"),
+        "cluster_label": int(cluster.get("cluster_label", -1)),
+        # Meta
+        "model_source": triage.get("model", "unknown"),
+        "has_ml_data": True,
+    }
+
+
+def _neutral() -> dict:
+    return {
+        "attention_fragmentation_score": 0.0,
+        "nocturnal_pattern_score": 0.0,
+        "doomscrolling_score": 0.0,
+        "low_mood_score": 0.0,
+        "anxiety_score": 0.0,
+        "anomaly_flag": False,
+        "anomaly_severity": 0.0,
+        "anomaly_risk_level": "low",
+        "flagged_features": [],
+        "cluster_name": "unknown",
+        "cluster_label": -1,
+        "model_source": "none",
+        "has_ml_data": False,
     }
