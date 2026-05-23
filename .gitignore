@@ -17,6 +17,19 @@ build/
 # ML models — solo van scripts de entrenamiento, no binarios
 data/models/*.joblib
 data/models/*.pkl
+ml-worker/saved_models/*.joblib
+ml-worker/saved_models/*.pkl
+ml-cv/models/*.pt
+ml-cv/models/*.onnx
+ml-cv/models/*.tflite
 
 # Datos sintéticos generados localmente
 data/synthetic/*.csv
+data/raw/studentlife/*.tar.gz
+data/raw/tiles2018/*.zip
+
+# Screenshots de prueba
+*.png
+*.jpg
+!docs/**/*.png
+!docs/**/*.jpg
