@@ -61,6 +61,7 @@ def test_complete_habit_first_completion():
     assert response.status_code == 200
     assert response.json() == {
         "streak": 1,
+        "message": "¡Primer día! El camino empieza aquí.",
         "used_grace_day": False,
         "broken": False,
     }
@@ -86,6 +87,7 @@ def test_complete_habit_consecutive_day():
     assert response.status_code == 200
     assert response.json() == {
         "streak": 4,
+        "message": "¡4 días seguidos! Sigue así 💪",
         "used_grace_day": False,
         "broken": False,
     }
@@ -94,7 +96,13 @@ def test_complete_habit_consecutive_day():
 def test_complete_habit_already_completed_today():
     mock_db = _make_mock_db()
     today = date.today().isoformat()
-    mock_db.table.return_value.insert.return_value.execute.return_value = MagicMock()
+    inserted_rows = []
+
+    def capture_insert(row):
+        inserted_rows.append(row)
+        return MagicMock(execute=lambda: MagicMock())
+
+    mock_db.table.return_value.insert.side_effect = capture_insert
     mock_db.table.return_value.select.return_value.eq.return_value.execute.return_value = MagicMock(
         data=[{
             "current_streak": 5,
@@ -110,6 +118,8 @@ def test_complete_habit_already_completed_today():
     assert response.status_code == 200
     assert response.json() == {
         "streak": 5,
+        "message": "Ya registraste este hábito hoy.",
         "used_grace_day": False,
         "broken": False,
     }
+    assert inserted_rows == []
