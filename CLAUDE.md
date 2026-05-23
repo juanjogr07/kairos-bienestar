@@ -108,12 +108,60 @@ test(ml):       docs(...):  chore(...):
 
 ---
 
+## Linear CLI
+
+Usa Linear CLI para consultar issues, cambiar estados y vincular PRs sin salir de la terminal.
+
+```bash
+# Instalación
+npm install -g @linear/sdk   # SDK (si se usa desde scripts)
+# o usar la API directamente con curl/gh (ver abajo)
+
+# API Key del workspace Kairós (pídela a Luisangel — no va en git)
+# export LINEAR_API_KEY=lin_api_...
+
+# Consultar un issue
+curl -s -X POST https://api.linear.app/graphql \
+  -H "Authorization: $LINEAR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"query":"{ issue(id: \"KAI-XX\") { title state { name } } }"}'
+
+# Cambiar estado de un issue
+# Estados del equipo Kairós:
+#   Todo:        4595a209-3b6b-4765-a5d8-4f0af1b10347
+#   In Progress: 1dd0c219-0639-42b8-a8f7-18723dfa19f4
+#   Done:        e7d5d02d-2e4a-4286-a26c-8434cce30afd
+```
+
+---
+
 ## Flujo de revisión de PR
 
 Cuando asistas en la revisión o creación de Pull Requests (PR), debes seguir estrictamente este flujo:
 1. **Aprobación requerida:** Nunca subas una PR sin que antes los cambios hayan sido aprobados explícitamente.
 2. **Revisión contra la documentación:** Realiza una revisión exhaustiva del código propuesto comparándolo SIEMPRE con los documentos del directorio `docs/`, haciendo especial énfasis en el proyecto en específico (`docs/superpowers/plans/`) y los roles (`docs/team/`).
 3. **Validación estricta:** SIEMPRE revisa y asegúrate de que los cambios cumplan rigurosamente con las especificaciones y contratos definidos en estos documentos. No apruebes ni generes PRs que violen la arquitectura o los lineamientos del equipo.
+
+## Reglas para crear PRs
+
+Al crear cualquier Pull Request, es **obligatorio**:
+
+1. **Issue en el título:** El título debe incluir el ID del issue de Linear.
+   ```
+   feat(ml): Isolation Forest anomaly detection — KAI-51
+   fix(api): corregir CORS en eventos batch — KAI-20
+   ```
+
+2. **Link al issue:** El body de la PR debe incluir el link directo al issue:
+   ```
+   🔗 Linear: https://linear.app/kairos-ia/issue/KAI-XX
+   ```
+
+3. **Variables de entorno:** Si el cambio agrega variables de entorno nuevas, listarlas explícitamente con su descripción y valor de ejemplo.
+
+4. **PRs dependientes:** Si esta PR depende de otra que aún no fue mergeada, listarla explícitamente indicando que debe mergearse primero.
+
+Usa el template en `.github/pull_request_template.md` — todos estos campos están incluidos.
 
 
 ---
