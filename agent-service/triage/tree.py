@@ -17,9 +17,30 @@ def run_triage(user_id: str) -> dict:
             "context": {"surveys": surveys},
         }
 
-    # NIVEL 2 — SEÑALES DE ÁNIMO
+    # NIVEL 2 — SEÑALES DE ÁNIMO (con contexto temporal)
     phq9 = surveys.get("phq9_score")
     gad7 = surveys.get("gad7_score")
+    phq9_prev = surveys.get("phq9_prev_score")
+    gad7_prev = surveys.get("gad7_prev_score")
+
+    # Tendencia mejorando: bajó ≥ 3 puntos vs encuesta anterior → nivel improving
+    if phq9 is not None and phq9_prev is not None and 5 <= phq9 < 15:
+        if phq9_prev - phq9 >= 3:
+            return {
+                "level": "improving",
+                "playbook_slug": "momentum-builder",
+                "reason": f"PHQ-9 bajó de {phq9_prev} a {phq9} (mejora de {phq9_prev - phq9} puntos)",
+                "context": {"surveys": surveys, "usage": usage},
+            }
+
+    if gad7 is not None and gad7_prev is not None and 5 <= gad7 < 15:
+        if gad7_prev - gad7 >= 3:
+            return {
+                "level": "improving",
+                "playbook_slug": "momentum-builder",
+                "reason": f"GAD-7 bajó de {gad7_prev} a {gad7} (mejora de {gad7_prev - gad7} puntos)",
+                "context": {"surveys": surveys, "usage": usage},
+            }
 
     if phq9 is not None and 5 <= phq9 < 15:
         return {
