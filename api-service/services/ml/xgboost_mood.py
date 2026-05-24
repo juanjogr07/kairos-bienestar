@@ -44,9 +44,12 @@ def _load_or_train() -> dict:
         return _cached_artifacts
 
     if MODEL_PATH.exists():
-        _cached_artifacts = joblib.load(MODEL_PATH)
-        logger.info("XGBoost mood model loaded from %s", MODEL_PATH)
-        return _cached_artifacts
+        try:
+            _cached_artifacts = joblib.load(MODEL_PATH)
+            logger.info("XGBoost mood model loaded from %s", MODEL_PATH)
+            return _cached_artifacts
+        except Exception as exc:
+            logger.warning("Failed to load model from %s (%s) — retraining fallback.", MODEL_PATH, exc)
 
     logger.warning(
         "Model not found at %s — training fallback. "
