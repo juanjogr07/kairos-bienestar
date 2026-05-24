@@ -1,6 +1,7 @@
 from agent.tools.get_survey_scores import get_survey_scores
 from agent.tools.get_ml_scores import get_ml_scores
 from agent.tools.get_usage_summary import get_usage_summary
+from agent.tools.get_cv_scores import get_cv_scores
 
 
 def _safe_get_forecast(user_id: str) -> dict:
@@ -114,6 +115,31 @@ def run_triage(user_id: str) -> dict:
             "reason": f"Día atípico detectado — anomaly_score = {ml['anomaly_severity']:.2f}, features: {ml.get('flagged_features', [])}",
             "context": {"ml": ml, "usage": usage},
         }
+
+    # ── NIVEL 7 — POSTURA & FATIGA VISUAL (Computer Vision) ──────────────────
+    cv = get_cv_scores(user_id)
+    if cv.get("cv_available"):
+        if cv.get("eye_strain_score", 0) > 0.70:
+            return {
+                "level": "physical",
+                "playbook_slug": "eye-strain-alert",
+                "reason": f"Fatiga visual detectada — eye_strain = {cv['eye_strain_score']:.2f}, blink_rate = {cv['blink_rate_rpm']:.1f} rpm",
+                "context": {"cv": cv, "usage": usage},
+            }
+        if cv.get("posture_score", 1) < 0.40:
+            return {
+                "level": "physical",
+                "playbook_slug": "posture-correction",
+                "reason": f"Mala postura detectada — posture_score = {cv['posture_score']:.2f}",
+                "context": {"cv": cv, "usage": usage},
+            }
+        if cv.get("environment_context") == "bedroom" and cv.get("distraction_risk_score", 0) > 0.60:
+            return {
+                "level": "physical",
+                "playbook_slug": "nocturnal-use-pattern",
+                "reason": f"Uso digital en cama detectado — distraction_risk = {cv['distraction_risk_score']:.2f}",
+                "context": {"cv": cv, "usage": usage},
+            }
 
     return {
         "level": "default",

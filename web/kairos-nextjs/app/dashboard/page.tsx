@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { TrendingDown, TrendingUp, Zap, Check, ChevronRight } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
+import { CVWidget } from "@/components/CVWidget";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 const WAVE_HEIGHTS = [22, 35, 48, 38, 55, 72, 68, 80, 90, 76, 85, 92, 96, 88, 72, 60, 54, 48, 40, 34, 28, 22, 18, 14];
@@ -280,6 +281,11 @@ export default function DashboardPage() {
         <button style={{ marginTop: 8, width: "100%", padding: "12px", borderRadius: 12, border: "1.5px dashed var(--line)", background: "transparent", color: "var(--muted)", fontFamily: "inherit", fontSize: 14, fontWeight: 500, cursor: "pointer", letterSpacing: "-0.01em", transition: "all .2s" }}>
           + Añadir un hábito
         </button>
+
+        {/* CV Widget — posture & eye strain */}
+        <div style={{ marginTop: 24 }}>
+          <CVWidget />
+        </div>
       </div>
     </AppShell>
   );
