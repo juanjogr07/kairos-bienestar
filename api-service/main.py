@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import events, surveys, dashboard, habits
+from routers import events, surveys, dashboard, habits, interventions
 
 app = FastAPI(title="Kairós API", version="0.1.0")
 
@@ -19,6 +19,7 @@ app.include_router(events.router)
 app.include_router(surveys.router)
 app.include_router(dashboard.router)
 app.include_router(habits.router)
+app.include_router(interventions.router)
 
 
 @app.get("/health")
