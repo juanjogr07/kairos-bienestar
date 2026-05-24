@@ -786,6 +786,52 @@ body.theme-deep .bottom-nav-mobile {
   border-bottom-left-radius: inherit;
 }
 
+/* ─── Insight card ─── */
+.insight-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 16px;
+  align-items: start;
+  background: linear-gradient(135deg, #ffffff 0%, #f3fdf9 100%);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  border-radius: 18px;
+  padding: 20px 22px;
+  margin-bottom: 18px;
+  box-shadow: 0 8px 24px -12px rgba(16, 185, 129, 0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.insight-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px -16px rgba(16, 185, 129, 0.2);
+}
+body.theme-deep .insight-card {
+  background: linear-gradient(135deg, #0a3a32, #0a3055);
+  border-color: rgba(94, 234, 212, 0.12);
+}
+.insight-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0c9a6c, #06b6d4);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  box-shadow: 0 8px 18px -8px rgba(6, 182, 212, 0.4);
+}
+.insight-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--teal-600);
+  background: var(--teal-50);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
 /* ─── Reduced motion ─── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
