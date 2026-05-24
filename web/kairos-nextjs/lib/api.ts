@@ -40,7 +40,7 @@ export interface DashboardData {
 
 export async function getDashboard(): Promise<DashboardData> {
   if (USE_MOCK) {
-    return { last_phq9_score: null, last_phq9_date: null, last_gad7_score: null, last_gad7_date: null }
+    return { today_usage_min: 0, active_habits: 0, total_habit_completions_today: 0, top_domains: [], last_phq9_score: null, last_phq9_date: null, last_gad7_score: null, last_gad7_date: null, last_survey_date: null, onboarding_completed: false }
   }
   const res = await fetch(`${API_URL}/api/v1/dashboard`, { headers: await authHeaders() })
   if (!res.ok) throw new Error(`Dashboard fetch failed: ${res.status}`)
