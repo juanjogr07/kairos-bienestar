@@ -75,7 +75,7 @@ export default function OnboardingPage() {
             <Sparkles size={36} className="text-bg-deep" strokeWidth={2.5} />
           </div>
           <h1 className="text-xl font-bold text-text-primary">
-            Listo, Alejandro.
+            Listo.
           </h1>
           <p className="mt-3 text-base leading-relaxed text-text-secondary">
             Gracias por compartir tu momento actual. Voy a estar acompañándote
