@@ -1,0 +1,56 @@
+{
+  "generated_at": "2026-05-24T06:25:53.577184+00:00",
+  "user_id": "880d6cfd-4a91-4406-a732-a313fa603150",
+  "agents": {
+    "animo": {
+      "status": "activo",
+      "morning_mood": 1.2,
+      "phq9_score": 9,
+      "gad7_score": 7,
+      "stress_level": "high"
+    },
+    "manana": {
+      "status": "completado",
+      "checkin_done": true,
+      "hour_activated": 9
+    },
+    "sueno": {
+      "status": "ok",
+      "sleep_hours": 7.2,
+      "sleep_quality": "interrupted"
+    },
+    "energia": {
+      "status": "ok",
+      "physical_energy": 3.3,
+      "hours_since_meal": 2.8,
+      "had_breakfast": false
+    },
+    "foco": {
+      "status": "en_espera",
+      "focus_sessions": 0
+    },
+    "pantalla": {
+      "status": "activo",
+      "screen_hours": 4.5,
+      "nocturnal_ratio": 0.32
+    },
+    "insights": {
+      "status": "disponible",
+      "ml_cluster": "{\"cluster\": 1, \"profile\": \"nocturnal_heavy_user\", \"confidence\": 0.81, \"description\": \"Alto uso nocturno y redes sociales; bajo uso productivo en horario laboral\"}",
+      "anomaly_flag": "{\"anomaly_score\": -0.276, \"is_anomaly\": true, \"risk_level\": \"low\", \"flagged_features\": [\"nocturnal_ratio\", \"scroll_speed_avg\"]}"
+    }
+  },
+  "daily_summary": {
+    "morning_mood": 1.2,
+    "sleep_hours": 7.2,
+    "sleep_quality": "interrupted",
+    "physical_energy": 3.3,
+    "screen_hours": 4.5,
+    "focus_sessions": 0,
+    "hours_since_meal": 2.8,
+    "had_breakfast": false,
+    "has_event_today": true,
+    "nocturnal_ratio": 0.32,
+    "stress_level": "high"
+  }
+}

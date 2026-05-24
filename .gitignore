@@ -33,3 +33,10 @@ data/raw/tiles2018/*.zip
 *.jpg
 !docs/**/*.png
 !docs/**/*.jpg
+
+# Herramientas de automatización (no son código del proyecto)
+.playwright-mcp/
+
+# Modelos YOLO descargados en runtime
+api-service/yolov8n.pt
+api-service/*.pt

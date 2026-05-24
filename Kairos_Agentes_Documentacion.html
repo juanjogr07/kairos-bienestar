@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kairós — Documentación de Agentes</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&family=Syne:wght@500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07070d; --bg2: #0d0d18; --bg3: #131320; --bg4: #1a1a2a;
+  --b: rgba(255,255,255,0.06); --b2: rgba(255,255,255,0.11);
+  --t1: #f0f0ff; --t2: #8585a8; --t3: #3a3a58; --t4: #22223a;
+  --acc: #7C6EFA; --a2: #B0A4FF;
+  --morning: #FBBF24; --sleep: #60A5FA; --mood: #F472B6;
+  --focus: #A78BFA; --screen: #F87171; --fuel: #34D399;
+  --insight: #2DD4BF; --progress: #F59E0B;
+  --core: #7C6EFA;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--t1); font-family: 'DM Sans', sans-serif; line-height: 1.65; }
+
+/* NAV */
+.nav { position: sticky; top: 0; z-index: 100; background: rgba(7,7,13,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--b); padding: .65rem 2rem; display: flex; align-items: center; gap: 0; overflow-x: auto; }
+.nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; color: var(--a2); white-space: nowrap; padding-right: 1.5rem; margin-right: 1rem; border-right: 1px solid var(--b); flex-shrink: 0; }
+.nav-items { display: flex; gap: 0; }
+.nav a { font-size: .68rem; font-weight: 600; color: var(--t3); text-decoration: none; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; padding: .5rem .85rem; transition: color .2s; border-right: 1px solid var(--b); }
+.nav a:hover { color: var(--t1); }
+
+/* HERO */
+.hero { padding: 4.5rem 2rem 3.5rem; max-width: 1100px; margin: 0 auto; }
+.hero-pre { font-family: 'Geist Mono', monospace; font-size: .62rem; letter-spacing: .16em; text-transform: uppercase; color: var(--acc); margin-bottom: .85rem; }
+.hero-title { font-family: 'Syne', sans-serif; font-size: clamp(2rem,5vw,3.5rem); font-weight: 800; line-height: 1.05; letter-spacing: -.02em; margin-bottom: 1rem; }
+.hero-title em { font-style: italic; color: var(--a2); font-family: 'DM Sans', sans-serif; font-weight: 300; }
+.hero-sub { font-size: .9rem; color: var(--t2); max-width: 600px; line-height: 1.8; margin-bottom: 2rem; }
+.hero-pills { display: flex; flex-wrap: wrap; gap: .4rem; }
+.hpill { font-family: 'Geist Mono', monospace; font-size: .62rem; background: var(--bg3); border: 1px solid var(--b2); border-radius: 4px; padding: .25rem .65rem; color: var(--t2); }
+
+/* LAYOUT */
+.wrap { max-width: 1100px; margin: 0 auto; padding: 0 2rem 6rem; }
+.section { margin-bottom: 5rem; }
+.section-eyebrow { font-family: 'Geist Mono', monospace; font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; color: var(--acc); margin-bottom: .4rem; }
+.section-title { font-family: 'Syne', sans-serif; font-size: 1.7rem; font-weight: 700; margin-bottom: .5rem; letter-spacing: -.01em; }
+.section-sub { font-size: .85rem; color: var(--t2); line-height: 1.75; max-width: 620px; margin-bottom: 2rem; }
+
+/* AGENT MAP */
+.agent-map { display: grid; grid-template-columns: 1fr; gap: 1px; background: var(--b); border-radius: 16px; overflow: hidden; margin-bottom: 2rem; }
+.map-core { background: linear-gradient(135deg, rgba(124,110,250,0.12), rgba(244,114,182,0.06)); padding: 1.5rem; display: grid; grid-template-columns: auto 1fr; gap: 1.25rem; align-items: start; }
+.map-core-icon { width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, var(--acc), #F472B6); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+.map-core-name { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; color: var(--a2); margin-bottom: .2rem; }
+.map-core-desc { font-size: .8rem; color: var(--t2); line-height: 1.65; }
+.map-agents { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1px; background: var(--b); }
+.map-agent { background: var(--bg2); padding: 1rem; display: flex; gap: .75rem; align-items: flex-start; transition: background .15s; cursor: pointer; text-decoration: none; }
+.map-agent:hover { background: var(--bg3); }
+.map-agent-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: .45rem; }
+.map-agent-name { font-family: 'Syne', sans-serif; font-size: .88rem; font-weight: 700; margin-bottom: .15rem; }
+.map-agent-role { font-size: .72rem; color: var(--t3); line-height: 1.45; }
+
+/* AGENT CARDS */
+.agent-card { background: var(--bg2); border: 1px solid var(--b); border-radius: 16px; overflow: hidden; margin-bottom: 1.5rem; scroll-margin-top: 56px; }
+.ac-head { padding: 1.25rem 1.5rem 1.1rem; border-bottom: 1px solid var(--b); display: grid; grid-template-columns: auto 1fr auto; gap: 1.25rem; align-items: start; }
+.ac-icon { width: 44px; height: 44px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+.ac-meta {}
+.ac-id { font-family: 'Geist Mono', monospace; font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; margin-bottom: .3rem; }
+.ac-name { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; margin-bottom: .15rem; }
+.ac-when { font-size: .72rem; color: var(--t2); line-height: 1.45; }
+.ac-badge { font-family: 'Geist Mono', monospace; font-size: .6rem; padding: .25rem .65rem; border-radius: 4px; border: 1px solid; white-space: nowrap; height: fit-content; }
+
+.ac-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1px; background: var(--b); }
+.ac-col { background: var(--bg2); padding: 1.25rem; }
+.ac-col-title { font-family: 'Geist Mono', monospace; font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; color: var(--t3); margin-bottom: .75rem; }
+.ac-items { display: flex; flex-direction: column; gap: .35rem; }
+.ac-item { font-size: .78rem; color: var(--t2); line-height: 1.55; display: flex; gap: .45rem; }
+.ac-item::before { content: '→'; color: var(--t3); flex-shrink: 0; font-size: .72rem; padding-top: .05rem; }
+.ac-item strong { color: var(--t1); font-weight: 500; }
+
+.science-box { background: var(--bg3); border-radius: 9px; padding: .85rem 1rem; font-size: .78rem; color: var(--t2); line-height: 1.7; border-left: 2px solid; margin-top: .5rem; }
+.science-box .sci-label { font-family: 'Geist Mono', monospace; font-size: .58rem; letter-spacing: .1em; text-transform: uppercase; margin-bottom: .3rem; display: block; }
+.science-box em { font-family: 'Geist Mono', monospace; font-size: .7rem; color: var(--t3); font-style: normal; }
+
+.rule-box { background: rgba(0,0,0,0.3); border-radius: 7px; padding: .65rem .85rem; font-family: 'Geist Mono', monospace; font-size: .7rem; line-height: 1.7; color: var(--t2); margin-top: .5rem; }
+.rule-box .rk { margin-right: .35rem; }
+
+.questions-list { display: flex; flex-direction: column; gap: .3rem; margin-top: .25rem; }
+.question-item { background: var(--bg3); border-radius: 7px; padding: .55rem .8rem; font-size: .75rem; color: var(--t2); line-height: 1.5; display: flex; gap: .6rem; }
+.question-item .q-num { font-family: 'Geist Mono', monospace; font-size: .62rem; color: var(--t3); flex-shrink: 0; padding-top: .05rem; }
+.question-item strong { color: var(--t1); font-weight: 500; }
+
+/* COLORS per agent */
+.a-core  { --ac: var(--core);    --acbg: rgba(124,110,250,0.08); --acb: rgba(124,110,250,0.2); }
+.a-morning{ --ac: var(--morning); --acbg: rgba(251,191,36,0.08);  --acb: rgba(251,191,36,0.2); }
+.a-sleep { --ac: var(--sleep);   --acbg: rgba(96,165,250,0.08);  --acb: rgba(96,165,250,0.2); }
+.a-mood  { --ac: var(--mood);    --acbg: rgba(244,114,182,0.08); --acb: rgba(244,114,182,0.2); }
+.a-focus { --ac: var(--focus);   --acbg: rgba(167,139,250,0.08); --acb: rgba(167,139,250,0.2); }
+.a-screen{ --ac: var(--screen);  --acbg: rgba(248,113,113,0.08); --acb: rgba(248,113,113,0.2); }
+.a-fuel  { --ac: var(--fuel);    --acbg: rgba(52,211,153,0.08);  --acb: rgba(52,211,153,0.2); }
+.a-insight{--ac: var(--insight); --acbg: rgba(45,212,191,0.08);  --acb: rgba(45,212,191,0.2); }
+.a-progress{--ac:var(--progress);--acbg: rgba(245,158,11,0.08);  --acb: rgba(245,158,11,0.2); }
+
+.agent-card { border-top: 2px solid var(--ac); }
+.ac-id { color: var(--ac); }
+.ac-name { color: var(--ac); }
+.ac-icon { background: var(--acbg); border: 1px solid var(--acb); }
+.ac-badge { background: var(--acbg); color: var(--ac); border-color: var(--acb); }
+.science-box { border-left-color: var(--ac); }
+.science-box .sci-label { color: var(--ac); }
+.map-agent-dot { background: var(--ac); }
+.map-agent-name { color: var(--ac); }
+
+/* CONNECTIONS */
+.conn-diagram { background: var(--bg2); border: 1px solid var(--b); border-radius: 14px; padding: 1.5rem; }
+.conn-row { display: flex; gap: 1rem; padding: .7rem 0; border-bottom: 1px solid var(--b); align-items: flex-start; }
+.conn-row:last-child { border-bottom: none; }
+.conn-from { font-size: .78rem; font-weight: 600; min-width: 140px; flex-shrink: 0; padding-top: .05rem; }
+.conn-arrow { color: var(--t3); font-size: .8rem; flex-shrink: 0; padding-top: .1rem; }
+.conn-targets { display: flex; flex-direction: column; gap: .25rem; }
+.conn-target { font-size: .75rem; color: var(--t2); display: flex; gap: .5rem; line-height: 1.5; }
+.conn-target::before { content: '·'; color: var(--t3); flex-shrink: 0; }
+.conn-target strong { color: var(--t1); font-weight: 500; }
+
+/* TRIAGE */
+.triage-list { display: flex; flex-direction: column; gap: .4rem; }
+.triage-row { background: var(--bg2); border: 1px solid var(--b); border-radius: 9px; padding: .7rem 1rem; display: flex; gap: 1rem; align-items: baseline; font-size: .78rem; }
+.triage-p { font-family: 'Geist Mono', monospace; font-size: .6rem; color: var(--t3); min-width: 20px; flex-shrink: 0; }
+.triage-if { font-family: 'Geist Mono', monospace; font-size: .7rem; color: var(--a2); flex: 1; min-width: 0; }
+.triage-then { color: var(--t2); flex: 1; }
+.triage-then strong { color: #34D399; font-weight: 500; }
+.triage-then.danger strong { color: var(--screen); }
+
+@media(max-width:640px) {
+  .hero { padding: 3rem 1.25rem 2rem; }
+  .wrap { padding: 0 1.25rem 4rem; }
+  .nav { padding: .65rem 1.25rem; }
+  .ac-head { grid-template-columns: auto 1fr; }
+  .ac-badge { display: none; }
+  .conn-from { min-width: 100px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">Kairós</div>
+  <div class="nav-items">
+    <a href="#mapa">Mapa</a>
+    <a href="#core">Core</a>
+    <a href="#morning">Morning</a>
+    <a href="#sleep">Sleep</a>
+    <a href="#mood">Mood</a>
+    <a href="#focus">Focus</a>
+    <a href="#screen">Screen</a>
+    <a href="#fuel">Fuel</a>
+    <a href="#insight">Insight</a>
+    <a href="#progress">Progress</a>
+    <a href="#conexiones">Conexiones</a>
+    <a href="#triage">Triaje</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-pre">// Documentación de agentes — Kairós Bienestar</div>
+  <h1 class="hero-title">Sistema de agentes:<br><em>qué hacen, cómo se conectan,</em><br>por qué funcionan.</h1>
+  <p class="hero-sub">9 agentes especializados coordinados por un orquestador central. Cada uno tiene una responsabilidad específica, consume datos concretos del onboarding y los check-ins, y actúa con base en evidencia neurocientífica sobre cómo el cerebro procesa el cambio de hábitos.</p>
+  <div class="hero-pills">
+    <span class="hpill">1 Core + 8 especializados</span>
+    <span class="hpill">FastAPI Python · OpenRouter · Claude Sonnet 4.5</span>
+    <span class="hpill">PHQ-9 · GAD-7 · Behavioral ML</span>
+    <span class="hpill">Supabase pgvector · RAG sobre playbooks</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- MAPA GENERAL -->
+<section class="section" id="mapa">
+  <div class="section-eyebrow">01 · Mapa del sistema</div>
+  <h2 class="section-title">Todos los agentes de un vistazo</h2>
+  <p class="section-sub">El usuario solo interactúa con Kairós como una sola entidad. Por debajo, el Core Agent orquesta a los 8 especializados según el contexto real del usuario en cada momento.</p>
+
+  <div class="agent-map">
+    <div class="map-core">
+      <div class="map-core-icon">⚡</div>
+      <div>
+        <div class="map-core-name">Core Agent — el orquestador</div>
+        <div class="map-core-desc">Recibe el mensaje del usuario, construye el UserContext completo desde Supabase, evalúa el árbol de triaje y decide qué agente especializado responde. Es el único que habla con el usuario. Los 8 agentes especializados alimentan su contexto y ejecutan tareas específicas bajo su coordinación.</div>
+      </div>
+    </div>
+    <div class="map-agents">
+      <a class="map-agent a-morning" href="#morning">
+        <div class="map-agent-dot" style="background:var(--morning)"></div>
+        <div><div class="map-agent-name">Morning</div><div class="map-agent-role">Check-in matutino · estado base del día</div></div>
+      </a>
+      <a class="map-agent a-sleep" href="#sleep">
+        <div class="map-agent-dot" style="background:var(--sleep)"></div>
+        <div><div class="map-agent-name">Sleep</div><div class="map-agent-role">Ciclo circadiano · sueño y rutina</div></div>
+      </a>
+      <a class="map-agent a-mood" href="#mood">
+        <div class="map-agent-dot" style="background:var(--mood)"></div>
+        <div><div class="map-agent-name">Mood</div><div class="map-agent-role">Estado emocional · override de crisis</div></div>
+      </a>
+      <a class="map-agent a-focus" href="#focus">
+        <div class="map-agent-dot" style="background:var(--focus)"></div>
+        <div><div class="map-agent-name">Focus</div><div class="map-agent-role">Sesiones de estudio · atención</div></div>
+      </a>
+      <a class="map-agent a-screen" href="#screen">
+        <div class="map-agent-dot" style="background:var(--screen)"></div>
+        <div><div class="map-agent-name">Screen</div><div class="map-agent-role">Tiempo en pantalla · doomscrolling</div></div>
+      </a>
+      <a class="map-agent a-fuel" href="#fuel">
+        <div class="map-agent-dot" style="background:var(--fuel)"></div>
+        <div><div class="map-agent-name">Fuel</div><div class="map-agent-role">Energía · alimentación · movimiento</div></div>
+      </a>
+      <a class="map-agent a-insight" href="#insight">
+        <div class="map-agent-dot" style="background:var(--insight)"></div>
+        <div><div class="map-agent-name">Insight</div><div class="map-agent-role">Análisis semanal automático</div></div>
+      </a>
+      <a class="map-agent a-progress" href="#progress">
+        <div class="map-agent-dot" style="background:var(--progress)"></div>
+        <div><div class="map-agent-name">Progress</div><div class="map-agent-role">Rachas · fases · anti-abandono</div></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- CORE AGENT -->
+<section class="section" id="core">
+  <div class="section-eyebrow">02 · Agente principal</div>
+  <h2 class="section-title">Core Agent</h2>
+
+  <div class="agent-card a-core">
+    <div class="ac-head">
+      <div class="ac-icon">⚡</div>
+      <div class="ac-meta">
+        <div class="ac-id">CORE · orchestrator.py · agent-service/agent/</div>
+        <div class="ac-name">Core Agent — orquestador</div>
+        <div class="ac-when">Activo en cada interacción. Es el único que el usuario ve y con quien habla.</div>
+      </div>
+      <span class="ac-badge">Siempre activo</span>
+    </div>
+    <div class="ac-body">
+      <div class="ac-col">
+        <div class="ac-col-title">Tarea exacta</div>
+        <div class="ac-items">
+          <div class="ac-item">Construir el UserContext completo desde Supabase al inicio de cada mensaje</div>
+          <div class="ac-item">Evaluar el árbol de triaje hardcoded antes de llamar al LLM — ahorra tokens y latencia</div>
+          <div class="ac-item">Decidir qué agente especializado responde según contexto + mensaje</div>
+          <div class="ac-item">Generar la respuesta final que ve el usuario con el tono correcto</div>
+          <div class="ac-item">Actualizar el estado del sistema tras cada interacción</div>
+        </div>
+      </div>
+      <div class="ac-col">
+        <div class="ac-col-title">Datos del onboarding que consume</div>
+        <div class="ac-items">
+          <div class="ac-item"><strong>PHQ-9 score</strong> — determina el umbral de intervención emocional desde el día 1</div>
+          <div class="ac-item"><strong>GAD-7 score</strong> — calibra cuándo activar el protocolo de derivación</div>
+          <div class="ac-item"><strong>Perfil de pantalla</strong> — screen_hours basal, apps de riesgo, patrón nocturno</div>
+          <div class="ac-item"><strong>Hábitos digitales iniciales</strong> — hora de dormir, energía, concentración habitual</div>
+          <div class="ac-item"><strong>Tipo de perfil</strong> (teen/young/adult) — adapta el tono de todos los agentes</div>
+        </div>
+        <div class="science-box" style="--ac:var(--core)">
+          <span class="sci-label">Neurociencia</span>
+          El PHQ-9 y GAD-7 son instrumentos validados que mapean directamente sobre el eje hipotálamo-hipófisis-adrenal (HPA). Conocer el score de base le permite al Core calibrar si el sistema nervioso del usuario está en modo "aprendizaje" o modo "supervivencia" — dos estados donde el cerebro procesa la información de forma radicalmente diferente.
+          <em>Fuente: Sapolsky, R. — Why Zebras Don't Get Ulcers (2004)</em>
+        </div>
+      </div>
+      <div class="ac-col">
+        <div class="ac-col-title">Cómo actúa con esa información a futuro</div>
+        <div class="ac-items">
+          <div class="ac-item">Si el PHQ-9 sube respecto al baseline → escala la frecuencia de check-ins del Mood Agent</div>
+          <div class="ac-item">Si el GAD-7 ≥ 15 en cualquier punto → deriva a Línea 106 sin pasar por el LLM</div>
+          <div class="ac-item">El perfil de pantalla del onboarding se convierte en el "normal" del usuario — las anomalías se detectan contra ese baseline, no contra promedios globales</div>
+          <div class="ac-item">Actualiza la fase del usuario (1→2→3) según días activos acumulados</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AGENTES ESPECIALIZADOS -->
+<section class="section">
+  <div class="section-eyebrow">03 · Agentes especializados</div>
+  <h2 class="section-title">Los 8 agentes</h2>
+  <p class="section-sub">Cada uno tiene una responsabilidad exclusiva, consume un subconjunto específico de los datos del usuario, y actúa en un momento concreto del día. Ninguno puede sobrepasar al Mood Agent si hay señales de crisis.</p>
+
+  <!-- MORNING -->
+  <div class="agent-card a-morning" id="morning">
+    <div class="ac-head">
+      <div class="ac-icon">🌅</div>
+      <div class="ac-meta">
+        <div class="ac-id">AGENT 01 · morning_agent.py</div>
+        <div class="ac-name">Morning Agent</div>
+        <div class="ac-when">Primera apertura del día antes de las 11am · si lleva 3+ días sin abrir: primero pregunta qué pasó</div>
+      </div>
+      <span class="ac-badge">Diario · mañana</span>
+    </div>
+    <div class="ac-body">
+      <div class="ac-col">
+        <div class="ac-col-title">Tarea exacta</div>
+        <div class="ac-items">
+          <div class="ac-item">Establecer el estado base del día en máximo 3 preguntas</div>
+          <div class="ac-item">Detectar si hubo días sin actividad y preguntar qué pasó — sin culpa</div>
+          <div class="ac-item">Pausar la racha si el usuario lleva 3+ días fuera (no borra, pausa)</div>
+          <div class="ac-item">Entregar <strong>morning_mood, sleep_quality, wake_time, has_event_today</strong> al Core</div>
+        </div>
+        <div class="ac-col-title" style="margin-top:1rem">Preguntas del check-in matutino</div>
+        <div class="questions-list">
+          <div class="question-item"><span class="q-num">Q1</span><span>¿Cómo dormiste anoche? <strong>(1 al 5)</strong></span></div>
+          <div class="question-item"><span class="q-num">Q2</span><span>¿Cómo estás ahora mismo? <strong>(1 al 5)</strong></span></div>
+          <div class="question-item"><span class="q-num">Q3</span><span>¿Tienes algo importante hoy? <strong>(examen / entrega / reunión / día normal)</strong></span></div>
+        </div>
+      </div>
+      <div class="ac-col">
+        <div class="ac-col-title">Datos del onboarding que usa como contexto</div>
+        <div class="ac-items">
+          <div class="ac-item"><strong>Hora habitual de acostarse</strong> — si el usuario reportó dormir tarde habitualmente, no se sorprende si la energía es baja</div>
+          <div class="ac-item"><strong>Horas de sueño habituales</strong> — distingue "hoy fue mal día" de "siempre duerme poco"</div>
+          <div class="ac-item"><strong>PHQ-9 score inicial</strong> — si el baseline ya era bajo, un 2/5 de ánimo no dispara alarma inmediata; si el baseline era alto, sí</div>
+        </div>
+        <div class="science-box" style="--ac:var(--morning)">
+          <span class="sci-label">Neurociencia — por qué importa el check-in matutino</span>
+          Las primeras horas del día determinan los niveles de cortisol basal. Un check-in matutino no es solo recolección de datos — es una intervención de regulación: al nombrar el estado emocional se activa la corteza prefrontal ventrolateral, que reduce la actividad de la amígdala. Preguntarle al usuario cómo está lo ayuda a procesar su estado antes de que el día lo abrume.
+          <em>Fuente: Lieberman et al. (2007) — UCLA, Psychological Science</em>
+        </div>
+      </div>
+      <div class="ac-col">
+        <div class="ac-col-title">Cómo actúa con esa información a futuro</div>
+        <div class="ac-items">
+          <div class="ac-item">El morning_mood se convierte en el punto de partida para el Mood Agent — si cae consistentemente por debajo del baseline del onboarding, el Core escala la frecuencia</div>
+          <div class="ac-item">has_event_today activa el Focus Agent con mayor prioridad durante ese día</div>
+          <div class="ac-item">Después de 7 días de check-ins, el Insight Agent tiene suficientes datos para generar la primera correlación real</div>
+          <div class="ac-item">Los días sin check-in le informan al Progress Agent sobre riesgo de abandono</div>
+        </div>
+        <div class="rule-box">
+          <span class="rk" style="color:var(--morning)">REGLA:</span> Si days_since_active ≥ 3 → no lanzar el check-in directamente. Primero: <span style="color:#34D399">"Llevas unos días, ¿qué pasó?" — sin presión, sin racha rota.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLEEP -->
+  <div class="agent-card a-sleep" id="sleep">
+    <div class="ac-head">
+      <div class="ac-icon">🌙</div>
+      <div class="ac-meta">
+        <div class="ac-id">AGENT 02 · sleep_agent.py</div>
+        <div class="ac-name">Sleep Agent</div>
+        <div class="ac-when">Check-in matutino + rutina de cierre a las 22:00 + cuando el usuario menciona cansancio o sueño</div>
+      </div>
+      <span class="ac-badge">Mañana y noche</span>
+    </div>
+    <div class="ac-body">
+      <div class="ac-col">
+        <div class="ac-col-title">Preguntas que hace</div>
+        <div class="questions-list">
+          <div class="question-item"><span class="q-num">M1</span><span>¿Cuántas horas dormiste aproximadamente?</span></div>
+          <div class="question-item"><span class="q-num">M2</span><span>¿Cuánto tardaste en quedarte dormido? <strong>(poco / bastante / mucho)</strong></span></div>
+          <div class="question-item"><span class="q-num">M3</span><span>¿A qué hora miraste el teléfono por última vez antes de dormir?</span></div>
+          <div class="question-item"><span class="q-num">N1</span><span>¿A qué hora piensas acostarte hoy?</span></div>
+          <div class="question-item"><span class="q-num">N2</span><span>¿Cómo estuvo tu energía durante el día? <strong>(1 al 5)</strong></span></div>
+        </div>
+        <div class="rule-box" style="margin-top:.75rem">
+          <span class="rk" style="color:var(--sleep)">REGLA:</span> Si sleep_hours &lt; 5 AND hora &gt; 21:00 AND usuario quiere estudiar → <span style="color:#34D399">bloquear Focus Agent. Decirle la verdad.</span>
+        </div>
+      </div>
+      <div class="ac-col">
+        <div class="ac-col-title">Datos del onboarding que usa</div>
+        <div class="ac-items">
+          <div class="ac-item"><strong>Hora habitual de acostarse</strong> — define qué es "tarde" para este usuario específico, no un promedio global</div>
+          <div class="ac-item"><strong>Horas de sueño habituales</strong> — el baseline de sueño permite detectar deuda acumulada (sleep debt)</div>
+          <div class="ac-item"><strong>Uso nocturno de pantalla</strong> (onboarding screen) — si ya reportó usar el teléfono en la cama siempre, la recomendación es diferente que si es algo nuevo</div>
+        </div>
+        <div class="science-box" style="--ac:var(--sleep)">
+          <span class="sci-label">Neurociencia — sueño y aprendizaje</span>
+          La fase REM consolida lo aprendido durante el día mediante replay hipocámpico. Sin sueño suficiente, la potenciación a largo plazo (LTP) — el mecanismo físico de la memoria — se deteriora. Con 6h de sueño durante 14 días, el deterioro cognitivo equivale al de 48h sin dormir, pero el usuario no lo percibe. La amígdala se vuelve 60% más reactiva con privación, amplificando la ansiedad.
+          <em>Fuente: Walker, M. — Why We Sleep (2017, UC Berkeley)</em>
+        </div>
+      </div>
+      <div class="ac-col">
+        <div class="ac-col-title">Cómo actúa a futuro</div>
+        <div class="ac-items">
+          <div class="ac-item">Calcula <strong>sleep debt acumulada</strong> — si el usuario lleva 3 noches con menos de 6h, la deuda afecta el umbral de intervención del Core</div>
+          <div class="ac-item">Detecta el <strong>patrón exacto</strong> que rompe el sueño de este usuario — puede ser pantallas, hora de cenar, ansiedad nocturna</div>
+          <div class="ac-item">Propone <strong>UN solo cambio a la vez</strong> — nunca listas. Basado en la ciencia de la formación de hábitos: un cambio a la vez tiene 3x más probabilidad de mantenerse</div>
+          <div class="ac-item">El Insight Agent usa el historial de sueño para la correlación más importante: sueño → rendimiento académico → estado de ánimo</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOOD -->
+  <div class="agent-card a-mood" id="mood">
+    <div class="ac-head">
+      <div class="ac-icon">🫁</div>
+      <div class="ac-meta">
+        <div class="ac-id">AGENT 03 · mood_agent.py</div>
+        <div class="ac-name">Mood Agent</div>
+        <div class="ac-when">Check-in emocional diario + análisis de tono en cada mensaje + <strong>override total si hay señales de crisis</strong></div>
+      </div>
+      <span class="ac-badge" style="border-color:rgba(248,113,113,0.4);color:var(--screen);background:rgba(248,113,113,0.1)">Override de crisis</span>
+    </div>
+    <div class="ac-body">
+      <div class="ac-col">
+        <div class="ac-col-title">Preguntas que hace</div>
+        <div class="questions-list">
+          <div class="question-item"><span class="q-num">D1</span><span>¿Cómo está tu ánimo ahora mismo? <strong>(1 al 5)</strong></span></div>
+          <div class="question-item"><span class="q-num">D2</span><span>¿Hay algo que te esté pesando hoy?</span></div>
+          <div class="question-item"><span class="q-num">D3</span><span>¿Cómo está tu nivel de estrés? <strong>(1 = tranquilo, 5 = al límite)</strong></span></div>
+          <div class="question-item"><span class="q-num">D4*</span><span>¿Te has sentido así varios días seguidos o es de hoy? <strong>(solo si ánimo ≤ 2)</strong></span></div>
+          <div class="question-item"><span class="q-num">D5*</span><span>¿Dormiste con pensamientos dando vueltas? <strong>(solo si ánimo ≤ 2)</strong></span></div>
+        </div>
+        <div class="rule-box" style="margin-top:.75rem;border-left:2px solid var(--screen)">
+          <span class="rk" style="color:var(--screen)">REGLA CRÍTICA:</span> Si crisis_keywords OR PHQ-9 ≥ 15 → <span style="color:var(--screen)">triggerCrisisProtocol() — Línea 106. Irrompible. Sin LLM.</span>
+        </div>
+      </div>
+      <div class="ac-col">
+        <div class="ac-col-title">Datos del onboarding que usa</div>
+        <div class="ac-items">
+          <div class="ac-item"><strong>PHQ-9 score inicial</strong> — es el baseline emocional. Un 3/5 de ánimo en alguien con PHQ-9 basal de 3 es muy diferente a un 3/5 en alguien con PHQ-9 basal de 12</div>
+          <div class="ac-item"><strong>GAD-7 score inicial</strong> — calibra el umbral de ansiedad. Si el GAD-7 basal ya era alto, una respuesta ansiosa en el chat no es anómala — pero una subida sí lo es</div>
+          <div class="ac-item"><strong>Respuesta a Q5 del screen</strong> — "¿Cómo te sientes después de redes?" Si reportó "más ansioso" o "me comparo más", el Mood Agent tiene contexto para conectar el estado emocional con los patrones digitales</div>
+        </div>
+        <div class="science-box" style="--ac:var(--mood)">
+          <span class="sci-label">Neurociencia — nombrar las emociones</span>
+          El "affect labeling" — poner palabras a los estados emocionales — reduce la actividad de la amígdala y activa la corteza prefrontal ventrolateral, el sistema ejecutivo del cerebro. No es solo terapéutico: es un mecanismo neurobiológico documentado. Por eso las preguntas del Mood Agent son conversacionales, no formularios — la forma importa tanto como el contenido.
+          <em>Fuente: Lieberman et al. (2007) — "Putting Feelings into Words", Psychological Science</em>
+        </div>
+      </div>
+      <div class="ac-col">
+        <div class="ac-col-title">Cómo actúa a futuro</div>
+        <div class="ac-items">
+          <div class="ac-item">Calcula <strong>mood_trend</strong> de 7 días — si el promedio cae respecto al baseline del onboarding, el Core aumenta la frecuencia del check-in emocional</div>
+          <div class="ac-item">Los <strong>emotional_keywords</strong> detectados en conversación libre alimentan el modelo XGBoost del ML Worker para predecir si el PHQ-9 va a empeorar en los próximos 7 días</div>
+          <div class="ac-item">Si el mood está bajo, el Mood Agent <strong>pausa todos los demás agentes</strong> — no tiene sentido hablar de hábitos cuando el sistema nervioso está en crisis</div>
+          <div class="ac-item">La conexión redes → estado emocional se construye con el tiempo: si los días con alto screen_hours correlacionan con mood bajo, el Insight Agent lo detecta y lo nombra</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOCUS -->
+  <div class="agent-card a-focus" id="focus">
+    <div class="ac-head">
+      <div class="ac-icon">📚</div>
+      <div class="ac-meta">
+        <div class="ac-id">AGENT 04 · focus_agent.py</div>
+        <div class="ac-name">Focus Agent</div>
+        <div class="ac-when">Cuando el usuario quiere estudiar o el Core detecta evento importante hoy</div>
+      </div>
+      <span class="ac-badge">Reactivo + proactivo</span>
+    </div>
+    <div class="ac-body">
+      <div class="ac-col">
+        <div class="ac-col-title">Preguntas que hace</div>
+        <div class="questions-list">
+          <div class="question-item"><span class="q-num">F1</span><span>¿Cuánto tiempo tienes disponible ahora mismo, sin interrupciones? <strong>(siempre primera)</strong></span></div>
+          <div class="question-item"><span class="q-num">F2</span><span>¿Qué necesitas estudiar o hacer?</span></div>
+          <div class="question-item"><span class="q-num">F3</span><span>¿Cómo te sientes para arrancar? <strong>(listo / un poco bloqueado / no puedo)</strong></span></div>
+          <div class="question-item"><span class="q-num">F4</span><span>¿Tienes el teléfono cerca o en otro cuarto?</span></div>
+          <div class="question-item"><span class="q-num">F5</span><span>Al terminar: ¿qué es lo único que vas a recordar de lo que hiciste? <strong>(guarda en DB)</strong></span></div>
+        </div>
+        <div class="rule-box" style="margin-top:.75rem">
+          <span class="rk" style="color:var(--focus)">REGLA:</span> Si F3 = "no puedo" AND tono del mensaje = ansiedad → <span style="color:#34D399">derivar a Mood Agent primero. Nunca forzar sesión en estado ansioso.</span>
+        </div>
+      </div>
+      <div class="ac-col">
+        <div class="ac-col-title">Datos del onboarding que usa</div>
+        <div class="ac-items">
+          <div class="ac-item"><strong>"¿Con qué frecuencia sientes que no puedes concentrarte?"</strong> — calibra el umbral normal. Si el onboarding reveló dificultad frecuente, las sesiones empiezan en 8 min, no en 12</div>
+          <div class="ac-item"><strong>Intereses del perfil</strong> — conecta los temas de estudio con lo que el usuario ya dijo que le importa. Derivadas + diseño de videojuegos. Historia + podcasts favoritos. Hace el contenido relevante.</div>
+          <div class="ac-item"><strong>Energía habitual del día</strong> — si reportó energía media-baja, las sesiones se proponen en el momento del día con mejor energía histórica</div>
+        </div>
+        <div class="science-box" style="--ac:var(--focus)">
+          <span class="sci-label">Neurociencia — atención sostenida y dopamina</span>
+          El sistema de recompensa del cerebro (núcleo accumbens) espera recompensa inmediata después de años de scroll. Las sesiones de 8-12 minutos son una re-calibración gradual: suficientemente cortas para no disparar la respuesta de "esto es aburrido", suficientemente largas para que el cerebro empiece a asociar el esfuerzo sostenido con una recompensa (completar algo). El recall final — "¿qué recuerdas?" — es el cierre del ciclo dopaminérgico de la sesión.
+          <em>Fuente: Mark, G. et al. (2016) — UC Irvine + Leroy, S. (2009) — UW, Attention Residue</em>
+        </div>
+      </div>
+      <div class="ac-col">
+        <div class="ac-col-title">Cómo actúa a futuro</div>
+        <div class="ac-items">
+          <div class="ac-item">El <strong>recall de cada sesión</strong> se guarda en DB — el Focus Agent lo usa en la siguiente sesión del mismo tema para conectar lo nuevo con lo que ya se procesó</div>
+          <div class="ac-item">El <strong>block_type</strong> (anxiety / fatigue / distraction) acumula datos: si el bloqueo es siempre ansiedad, el Insight Agent lo detecta y lo conecta con el PHQ-9</div>
+          <div class="ac-item">Las sesiones completadas alimentan al <strong>Isolation Forest</strong> del ML — días sin sesiones son una señal de anomalía que puede indicar deterioro de ánimo</div>
+          <div class="ac-item">Semana a semana, la duración de las sesiones aumenta gradualmente — el cerebro re-aprende a sostener la atención</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN -->
+  <div class="agent-card a-screen" id="screen">
+    <div class="ac-head">
+      <div class="ac-icon">📱</div>
+      <div class="ac-meta">
+        <div class="ac-id">AGENT 05 · screen_agent.py</div>
+        <div class="ac-name">Screen Agent</div>
+        <div class="ac-when">Check-in de tarde (17:00) + cuando la extensión detecta uso prolongado + cuando el usuario menciona redes</div>
+      </div>
+      <span class="ac-badge">Extensión + autorreporte</span>
+    </div>
+    <div class="ac-body">
+      <div class="ac-col">
+        <div class="ac-col-title">Preguntas que hace (si no hay extensión)</div>
+        <div class="questions-list">
+          <div class="question-item"><span class="q-num">S1</span><span>¿Cuántas horas llevas en pantallas hoy?</span></div>
+          <div class="question-item"><span class="q-num">S2</span><span>¿Fue más uso intencional o scroll sin fin?</span></div>
+          <div class="question-item"><span class="q-num">S3*</span><span>¿Cómo te sientes después de haber estado en redes? <strong>(si screen_hours > 3)</strong></span></div>
+        </div>
+        <div class="ac-col-title" style="margin-top:1rem">Datos automáticos de la extensión</div>
+        <div class="ac-items">
+          <div class="ac-item"><strong>Total de tiempo en pantalla</strong> por dominio y categoría</div>
+          <div class="ac-item"><strong>Velocidad de scroll</strong> — doomscrolling si supera 800 px/s por más de 5 min</div>
+          <div class="ac-item"><strong>Cambios de pestaña por hora</strong> — fragmentación si supera 20/h</div>
+          <div class="ac-item"><strong>Uso nocturno</strong> — ratio de actividad después de las 22:00</div>
+        </div>
+      </div>
+      <div class="ac-col">
+        <div class="ac-col-title">Datos del onboarding que usa</div>
+        <div class="ac-items">
+          <div class="ac-item"><strong>Captura / respuestas de screen time</strong> — establece el baseline de uso. Lo que ahora el sistema considera "más que normal" es relativo a ese baseline, no a promedios globales</div>
+          <div class="ac-item"><strong>"¿Cómo te sientes después de redes?"</strong> (Q5 onboarding) — si el usuario ya reportó ansiedad o comparación, el Screen Agent lo conecta directamente con el Mood Agent</div>
+          <div class="ac-item"><strong>Apps principales</strong> — si Instagram y TikTok están en el top 3, el playbook doomscrolling se carga con más contexto</div>
+        </div>
+        <div class="science-box" style="--ac:var(--screen)">
+          <span class="sci-label">Neurociencia — scroll y dopamina intermitente</span>
+          El diseño del scroll infinito usa el mismo mecanismo de refuerzo variable que las máquinas tragamonedas (Skinner, 1938). El núcleo accumbens se activa con la anticipación de la recompensa, no con la recompensa misma. Cada pull-to-refresh es un tirón del brazo de la máquina. El Screen Agent no bloquea — hace visible el patrón, porque la conciencia activa la corteza prefrontal, que puede inhibir el impulso.
+          <em>Fuente: Sherman et al. (2016) — UCLA fMRI study, Psychological Science</em>
+        </div>
+      </div>
+      <div class="ac-col">
+        <div class="ac-col-title">Cómo actúa a futuro</div>
+        <div class="ac-items">
+          <div class="ac-item">El nocturnal_ratio es la señal más correlacionada con la calidad del sueño — si sube, el Sleep Agent recibe una alerta automática</div>
+          <div class="ac-item">El Isolation Forest analiza los patrones de screen_hours — un día con 8h cuando el promedio es 3h es una anomalía que puede indicar evasión emocional</div>
+          <div class="ac-item">La pregunta central del agente — <strong>"¿elegiste esto o simplemente pasó?"</strong> — es el mecanismo de conciencia que, con el tiempo, reduce el uso compulsivo sin restricciones</div>
+          <div class="ac-item">Los datos de la extensión alimentan directamente el modelo XGBoost: screen_hours + nocturnal_ratio son features predictores del cambio en PHQ-9</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FUEL -->
+  <div class="agent-card a-fuel" id="fuel">
+    <div class="ac-head">
+      <div class="ac-icon">⚡</div>
+      <div class="ac-meta">
+        <div class="ac-id">AGENT 06 · fuel_agent.py</div>
+        <div class="ac-name">Fuel Agent</div>
+        <div class="ac-when">Check-in de tarde + si horas_sin_comer supera 8h + usuario menciona cansancio físico o bajón de energía</div>
+      </div>
+      <span class="ac-badge">Tarde · reactivo</span>
+    </div>
+    <div class="ac-body">
+      <div class="ac-col">
+        <div class="ac-col-title">Preguntas que hace</div>
+        <div class="questions-list">
+          <div class="question-item"><span class="q-num">E1</span><span>¿Ya comiste algo hoy? <strong>(sí / no / algo pequeño)</strong></span></div>
+          <div class="question-item"><span class="q-num">E2</span><span>¿A qué hora fue tu última comida?</span></div>
+          <div class="question-item"><span class="q-num">E3</span><span>¿Cómo está tu energía física ahora? <strong>(1 al 5)</strong></span></div>
+          <div class="question-item"><span class="q-num">E4</span><span>¿Tomaste suficiente agua hoy? <strong>(sí / más o menos / casi nada)</strong></span></div>
+          <div class="question-item"><span class="q-num">E5</span><span>¿Hiciste algún movimiento físico hoy? <strong>(así sea caminar)</strong></span></div>
+        </div>
+        <div class="rule-box" style="margin-top:.75rem">
+          <span class="rk" style="color:var(--fuel)">REGLA:</span> Si hours_since_last_meal &gt; 8 → <span style="color:#34D399">fuel_block_flag = true. Core bloquea Focus Agent hasta que el usuario confirme que comió.</span>
+        </div>
+      </div>
+      <div class="ac-col">
+        <div class="ac-col-title">Datos del onboarding que usa</div>
+        <div class="ac-items">
+          <div class="ac-item"><strong>"¿Comes regularmente?"</strong> (onboarding hábitos Q5) — si el usuario ya reportó saltarse comidas frecuentemente, el agente no se sorprende: ajusta el umbral de intervención</div>
+          <div class="ac-item"><strong>Energía habitual del día</strong> — si el baseline de energía ya era bajo, un 2/5 no es una alarma inmediata; si era 4/5 y ahora es 2/5, sí lo es</div>
+        </div>
+        <div class="science-box" style="--ac:var(--fuel)">
+          <span class="sci-label">Neurociencia — intestino y cerebro</span>
+          El 95% de la serotonina del cuerpo se produce en el intestino (eje intestino-cerebro). El nervio vago conecta directamente el estado del microbioma con el estado emocional. Saltarse el almuerzo genera hipoglucemia cerebral — el cerebro sin glucosa busca dopamina fácil (scroll, azúcar) y entra en ciclos de picos y bajones que destruyen la concentración. El bajón de las 3pm no es cansancio — es glucemia.
+          <em>Fuente: Cryan et al. (2019) — Nature Reviews Neuroscience</em>
+        </div>
+      </div>
+      <div class="ac-col">
+        <div class="ac-col-title">Cómo actúa a futuro</div>
+        <div class="ac-items">
+          <div class="ac-item">Construye correlaciones entre comidas y rendimiento: <strong>"los días que desayunaste, tus sesiones de foco duraron el doble"</strong> — datos propios, no estadísticas genéricas</div>
+          <div class="ac-item">El movimiento físico se correlaciona con mood_score — el Insight Agent detecta si los días con actividad física tienen consistentemente mejor ánimo</div>
+          <div class="ac-item">El fuel_block_flag le dice al Core cuándo el cansancio reportado es metabólico, no emocional — evita que el Mood Agent intervenga en algo que se resuelve comiendo</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSIGHT -->
+  <div class="agent-card a-insight" id="insight">
+    <div class="ac-head">
+      <div class="ac-icon">🔍</div>
+      <div class="ac-meta">
+        <div class="ac-id">AGENT 07 · insight_agent.py</div>
+        <div class="ac-name">Insight Agent</div>
+        <div class="ac-when">Cada 7 días automáticamente, sin que el usuario haga nada. No hace preguntas — analiza los logs.</div>
+      </div>
+      <span class="ac-badge">Automático · semanal</span>
+    </div>
+    <div class="ac-body">
+      <div class="ac-col">
+        <div class="ac-col-title">Qué consume</div>
+        <div class="ac-items">
+          <div class="ac-item">Todos los DailyLogs de los últimos 7 días: sleep_hours, mood_am, mood_pm, screen_hours, meals_count, focus_sessions, physical_energy</div>
+          <div class="ac-item">Historial de sesiones de estudio — temas, duraciones, recalls guardados</div>
+          <div class="ac-item">Rachas y días activos del Progress Agent</div>
+          <div class="ac-item">PHQ-9 / GAD-7 del onboarding como baseline de comparación</div>
+        </div>
+      </div>
+      <div class="ac-col">
+        <div class="ac-col-title">Qué produce</div>
+        <div class="ac-items">
+          <div class="ac-item"><strong>1 narrativa personalizada</strong> generada por Claude con datos reales del usuario — nunca estadísticas genéricas</div>
+          <div class="ac-item"><strong>3 correlaciones</strong> de sus propios datos: sueño→ánimo, pantallas→sueño, comida→foco</div>
+          <div class="ac-item"><strong>1 recomendación</strong> para la próxima semana — la más impactante según los patrones detectados</div>
+          <div class="ac-item">Progreso comparado con la semana anterior y con el baseline del onboarding</div>
+        </div>
+        <div class="science-box" style="--ac:var(--insight)">
+          <span class="sci-label">Neurociencia — feedback personalizado y motivación</span>
+          El cerebro responde de forma muy diferente a feedback genérico ("duerme 8 horas") versus feedback de sus propios datos ("cuando dormiste +7h, tu ánimo fue 40% mejor"). El segundo activa el sentido de agencia — la creencia de que las propias acciones tienen consecuencias — que es el predictor más fuerte de cambio de comportamiento a largo plazo según la Teoría Social Cognitiva de Bandura.
+          <em>Fuente: Bandura, A. (1997) — Self-Efficacy: The Exercise of Control</em>
+        </div>
+      </div>
+      <div class="ac-col">
+        <div class="ac-col-title">Ejemplo de output real</div>
+        <div class="rule-box" style="font-family:inherit;font-size:.78rem;color:var(--t2);line-height:1.7">
+          <span style="color:var(--insight);font-family:'Geist Mono',monospace;font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.4rem">Insight semanal generado</span>
+          "Esta semana dormiste 1.4h más que la anterior. Los 3 días que dormiste más de 7h estudiaste el doble y tu ánimo promedió 4/5. El martes fue tu mejor día — coincide con que desayunaste y no abriste TikTok antes de las 11am. Para la próxima semana: teléfono fuera de la cama."
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="agent-card a-progress" id="progress">
+    <div class="ac-head">
+      <div class="ac-icon">📈</div>
+      <div class="ac-meta">
+        <div class="ac-id">AGENT 08 · progress_agent.py</div>
+        <div class="ac-name">Progress Agent</div>
+        <div class="ac-when">Al abrir el dashboard + calcula fases + detecta riesgo de abandono</div>
+      </div>
+      <span class="ac-badge">Dashboard · fases</span>
+    </div>
+    <div class="ac-body">
+      <div class="ac-col">
+        <div class="ac-col-title">Qué calcula</div>
+        <div class="ac-items">
+          <div class="ac-item">Racha actual de días activos y racha más larga histórica</div>
+          <div class="ac-item">Fase del usuario: <strong>Fase 1</strong> (días 1-14, básico), <strong>Fase 2</strong> (días 15-60, correlaciones), <strong>Fase 3</strong> (60+, retos)</div>
+          <div class="ac-item">Tendencias de 14 días para cada variable del DailyLog</div>
+          <div class="ac-item">Riesgo de abandono si lleva 3+ días sin actividad</div>
+        </div>
+        <div class="rule-box" style="margin-top:.75rem">
+          <span class="rk" style="color:var(--progress)">ANTI-ABANDONO:</span> Si days_since_active ≥ 3 → racha pausada (no borrada). Mensaje al volver: <span style="color:#34D399">"¿Qué pasó?" — sin culpa, sin presión.</span>
+        </div>
+      </div>
+      <div class="ac-col">
+        <div class="ac-col-title">Sistema de fases</div>
+        <div class="ac-items">
+          <div class="ac-item"><strong>Fase 1 (días 1-14):</strong> interfaz simple, solo check-ins y chat. El sistema observa sin abrumar.</div>
+          <div class="ac-item"><strong>Fase 2 (días 15-60):</strong> se desbloquean correlaciones e insights profundos. El usuario ya tiene datos suficientes para ver patrones reales.</div>
+          <div class="ac-item"><strong>Fase 3 (día 60+):</strong> el tono cambia. Ya no guía — reta. El usuario ya conoce el sistema; ahora lo usa con autonomía.</div>
+        </div>
+        <div class="science-box" style="--ac:var(--progress)">
+          <span class="sci-label">Neurociencia — hábitos y refuerzo gradual</span>
+          La formación de hábitos requiere en promedio 66 días (Lally et al., 2010, UCL), no 21 como dice el mito popular. El sistema de fases está calibrado sobre esta evidencia: los primeros 14 días son de observación, los siguientes 45 días son donde el hábito se consolida, y a partir del día 60 el comportamiento es más automático. Las rachas aprovechan el efecto de consistencia conductual — una racha rota no se borra, se pausa, porque el reinicio total destruye la motivación.
+          <em>Fuente: Lally et al. (2010) — European Journal of Social Psychology, UCL</em>
+        </div>
+      </div>
+      <div class="ac-col">
+        <div class="ac-col-title">Cómo actúa a futuro</div>
+        <div class="ac-items">
+          <div class="ac-item">Alimenta el dashboard con las gráficas de progreso de los últimos 14 días</div>
+          <div class="ac-item">Le dice al Core en qué fase está el usuario para que el tono de respuesta sea diferente — no se le explica lo básico a alguien en Fase 3</div>
+          <div class="ac-item">El riesgo de abandono activa un mensaje de re-engagement específico según los datos: si el usuario siempre abandona después de un día con mal ánimo, el mensaje lo menciona</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONEXIONES -->
+<section class="section" id="conexiones">
+  <div class="section-eyebrow">04 · Conexiones</div>
+  <h2 class="section-title">Cómo se comunican entre sí</h2>
+  <p class="section-sub">Cada agente produce outputs que otros agentes consumen. El Core tiene visibilidad de todo — los agentes especializados solo ven su propio dominio.</p>
+
+  <div class="conn-diagram">
+    <div class="conn-row">
+      <div class="conn-from" style="color:var(--morning)">Morning →</div>
+      <div class="conn-arrow">↓</div>
+      <div class="conn-targets">
+        <div class="conn-target"><strong>Core:</strong> morning_mood, sleep_quality, has_event_today, days_since_active — establece el tono del día</div>
+        <div class="conn-target"><strong>Focus:</strong> si has_event_today = true → Focus Agent sube en prioridad durante ese día</div>
+        <div class="conn-target"><strong>Progress:</strong> checkin_done = true → actualiza la racha del día</div>
+      </div>
+    </div>
+    <div class="conn-row">
+      <div class="conn-from" style="color:var(--sleep)">Sleep →</div>
+      <div class="conn-arrow">↓</div>
+      <div class="conn-targets">
+        <div class="conn-target"><strong>Core:</strong> sleep_hours, sleep_debt, sleep_risk_flag — si sleep &lt; 5h y es tarde, bloquea Focus</div>
+        <div class="conn-target"><strong>Screen:</strong> last_screen_time — si fue tarde, Screen Agent tiene contexto para la rutina nocturna</div>
+        <div class="conn-target"><strong>Insight:</strong> sleep_hours_7d es la variable más correlacionada con mood y rendimiento</div>
+      </div>
+    </div>
+    <div class="conn-row">
+      <div class="conn-from" style="color:var(--mood)">Mood →</div>
+      <div class="conn-arrow">↓</div>
+      <div class="conn-targets">
+        <div class="conn-target"><strong>Core (override):</strong> si mood &lt; 3 → TODOS los agentes se pausan, Mood toma el control</div>
+        <div class="conn-target"><strong>ML Worker:</strong> emotional_keywords + mood_trend alimentan el XGBoost que predice cambio en PHQ-9</div>
+        <div class="conn-target"><strong>Focus:</strong> si mood bajo → Focus Agent recibe señal para no forzar sesión</div>
+      </div>
+    </div>
+    <div class="conn-row">
+      <div class="conn-from" style="color:var(--focus)">Focus →</div>
+      <div class="conn-arrow">↓</div>
+      <div class="conn-targets">
+        <div class="conn-target"><strong>Insight:</strong> focus_sessions, block_type, recall — son los inputs más ricos para las correlaciones semanales</div>
+        <div class="conn-target"><strong>ML Worker:</strong> días sin sesiones son features del Isolation Forest — señal de posible deterioro</div>
+        <div class="conn-target"><strong>Core:</strong> upcoming_exams — sube la prioridad del Focus Agent en días previos a exámenes</div>
+      </div>
+    </div>
+    <div class="conn-row">
+      <div class="conn-from" style="color:var(--screen)">Screen →</div>
+      <div class="conn-arrow">↓</div>
+      <div class="conn-targets">
+        <div class="conn-target"><strong>Sleep:</strong> nocturnal_ratio alto → Sleep Agent recibe alerta para intervenir esa noche</div>
+        <div class="conn-target"><strong>Mood:</strong> screen_hours alto + estado emocional negativo → activa playbook comparison-social</div>
+        <div class="conn-target"><strong>ML Worker:</strong> screen_hours + nocturnal_ratio son features predictoras del PHQ-9 futuro</div>
+      </div>
+    </div>
+    <div class="conn-row">
+      <div class="conn-from" style="color:var(--fuel)">Fuel →</div>
+      <div class="conn-arrow">↓</div>
+      <div class="conn-targets">
+        <div class="conn-target"><strong>Core (bloqueo):</strong> fuel_block_flag = true → Focus Agent bloqueado hasta confirmar comida</div>
+        <div class="conn-target"><strong>Insight:</strong> correlación comida → energía → rendimiento en sesiones de foco</div>
+        <div class="conn-target"><strong>Mood:</strong> distingue cansancio metabólico de cansancio emocional — evita intervención incorrecta</div>
+      </div>
+    </div>
+    <div class="conn-row">
+      <div class="conn-from" style="color:var(--insight)">Insight →</div>
+      <div class="conn-arrow">↓</div>
+      <div class="conn-targets">
+        <div class="conn-target"><strong>Usuario:</strong> narrativa semanal con correlaciones reales de sus propios datos</div>
+        <div class="conn-target"><strong>Progress:</strong> weekly_insight guardado en DB alimenta el dashboard de progreso</div>
+        <div class="conn-target"><strong>Core:</strong> top_recommendation ajusta el enfoque de los agentes para la semana siguiente</div>
+      </div>
+    </div>
+    <div class="conn-row" style="border-bottom:none">
+      <div class="conn-from" style="color:var(--progress)">Progress →</div>
+      <div class="conn-arrow">↓</div>
+      <div class="conn-targets">
+        <div class="conn-target"><strong>Core:</strong> user_phase determina el tono de todos los agentes — Fase 3 ya no explica lo básico</div>
+        <div class="conn-target"><strong>Morning:</strong> si days_since_active ≥ 3 → Morning Agent recibe instrucción de preguntar qué pasó antes del check-in</div>
+        <div class="conn-target"><strong>Dashboard:</strong> tendencias de 14 días, racha, fase actual — toda la capa visual del progreso</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRIAGE -->
+<section class="section" id="triage">
+  <div class="section-eyebrow">05 · Árbol de triaje</div>
+  <h2 class="section-title">Cómo decide el Core qué agente responde</h2>
+  <p class="section-sub">Las reglas P1–P8 se evalúan en microsegundos sin llamar al LLM. Solo si ninguna aplica, Claude decide con el UserContext completo. Esto hace el sistema rápido, predecible y barato en tokens.</p>
+
+  <div class="triage-list">
+    <div class="triage-row">
+      <span class="triage-p">P1</span>
+      <span class="triage-if">crisis_flag = true OR crisis_keywords en mensaje</span>
+      <span class="triage-then danger">→ <strong>Mood con protocolo de crisis. Línea 106. Irrompible. Sin LLM.</strong></span>
+    </div>
+    <div class="triage-row">
+      <span class="triage-p">P2</span>
+      <span class="triage-if">mood_score &lt; 3 OR mood_am &lt; 3</span>
+      <span class="triage-then">→ <strong>Mood Agent toma el control. Todos los demás agentes pausan.</strong></span>
+    </div>
+    <div class="triage-row">
+      <span class="triage-p">P3</span>
+      <span class="triage-if">fuel_block_flag = true (hours_since_meal &gt; 8)</span>
+      <span class="triage-then">→ <strong>Fuel Agent. Core bloquea Focus hasta que el usuario confirme que comió.</strong></span>
+    </div>
+    <div class="triage-row">
+      <span class="triage-p">P4</span>
+      <span class="triage-if">sleep_hours &lt; 5 AND hora &gt; 21 AND intent = "estudiar"</span>
+      <span class="triage-then">→ <strong>Sleep Agent. Honestidad sobre obediencia: "con este estado no va a entrar nada".</strong></span>
+    </div>
+    <div class="triage-row">
+      <span class="triage-p">P5</span>
+      <span class="triage-if">screen_hours &gt; 3 AND has_exam_tomorrow = true</span>
+      <span class="triage-then">→ <strong>Screen Agent con el contexto del examen de mañana.</strong></span>
+    </div>
+    <div class="triage-row">
+      <span class="triage-p">P6</span>
+      <span class="triage-if">physical_energy &lt; 2 AND hours_since_meal &gt; 6</span>
+      <span class="triage-then">→ <strong>Fuel Agent. El cansancio es glucémico, no emocional.</strong></span>
+    </div>
+    <div class="triage-row">
+      <span class="triage-p">P7</span>
+      <span class="triage-if">sleep_quality &lt; 2 AND usuario pide estudiar</span>
+      <span class="triage-then">→ <strong>Sleep Agent. No se fuerza sesión de foco con sueño de 1/5.</strong></span>
+    </div>
+    <div class="triage-row">
+      <span class="triage-p">P8</span>
+      <span class="triage-if">nocturnal_ratio &gt; 0.4 (más del 40% de uso después de las 22h)</span>
+      <span class="triage-then">→ <strong>Sleep Agent con playbook nocturnal-use-pattern.</strong></span>
+    </div>
+    <div class="triage-row" style="border-color:rgba(124,110,250,0.2);background:rgba(124,110,250,0.04)">
+      <span class="triage-p" style="color:var(--acc)">P99</span>
+      <span class="triage-if" style="color:var(--t2)">Ninguna regla hardcoded aplica</span>
+      <span class="triage-then">→ <strong style="color:var(--a2)">Claude LLM decide con UserContext completo. El fallback inteligente.</strong></span>
+    </div>
+  </div>
+
+  <div style="margin-top:1.5rem;background:var(--bg3);border-radius:12px;padding:1.1rem 1.25rem;font-size:.8rem;color:var(--t2);line-height:1.75;border:1px solid var(--b)">
+    <strong style="color:var(--t1);font-family:'Syne',sans-serif;display:block;margin-bottom:.35rem">Por qué primero reglas y luego LLM</strong>
+    Las reglas P1-P8 garantizan que los casos de mayor riesgo — crisis emocional, sin comer, sin dormir — siempre se manejen correctamente, sin depender de que el LLM interprete bien el contexto. El LLM es poderoso pero no predecible al 100%. Para las decisiones críticas, las reglas explícitas son más seguras, más rápidas y más auditables. El LLM entra donde la nuance importa más que la velocidad.
+  </div>
+</section>
+
+</div>
+</body>
+</html>
