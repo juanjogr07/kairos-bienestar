@@ -17,7 +17,9 @@ import {
 import { AppShell } from "@/components/AppShell";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { getDashboard, type DashboardData } from "@/lib/api";
+import { getProgressSummary } from "@/lib/agent";
 import { createClient } from "@/lib/supabase";
+import { useTheme } from "@/components/ThemeProvider";
 
 function phq9Category(score: number): string {
   if (score <= 4) return "Mínimo";
@@ -45,11 +47,14 @@ function formatDate(iso: string | null): string {
 
 export default function ProfilePage() {
   const { checking } = useRequireAuth();
+  const { theme, toggleTheme } = useTheme();
   const router = useRouter();
   const [email, setEmail] = useState<string | null>(null);
   const [name, setName] = useState<string | null>(null);
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [loadingData, setLoadingData] = useState(true);
+  const [streak, setStreak] = useState<number | null>(null);
+  const [daysActive, setDaysActive] = useState<number | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -68,6 +73,13 @@ export default function ProfilePage() {
       })
       .catch(() => setDashboard(null))
       .finally(() => setLoadingData(false));
+    getProgressSummary()
+      .then((p) => {
+        if (!p) return;
+        setStreak(p.longest_streak);
+        setDaysActive(p.days_active);
+      })
+      .catch(() => {});
   }, []);
 
   async function handleLogout() {
@@ -127,14 +139,14 @@ export default function ProfilePage() {
         />
         <Stat
           icon={<Flame size={18} />}
-          value="7"
+          value={streak != null ? String(streak) : "—"}
           label="Racha máxima"
           color="text-accent-warm"
           bg="rgba(255,159,90,0.12)"
         />
         <Stat
           icon={<Calendar size={18} />}
-          value="42"
+          value={daysActive != null ? String(daysActive) : "—"}
           label="Días de uso"
           color="text-accent-secondary"
           bg="rgba(123,111,240,0.15)"
@@ -238,7 +250,7 @@ export default function ProfilePage() {
         <div className="overflow-hidden rounded-lg border border-border-subtle bg-bg-surface">
           <Setting icon={<Bell size={18} />} label="Notificaciones" value="Activadas · suaves" />
           <Setting icon={<Globe size={18} />} label="Zona horaria" value="GMT-5 · Bogotá" />
-          <Setting icon={<Moon size={18} />} label="Tema" value="Oscuro" last />
+          <Setting icon={<Moon size={18} />} label="Tema" value={theme === "dark" ? "Oscuro" : "Claro"} last onClick={toggleTheme} />
         </div>
       </section>
 
@@ -295,14 +307,17 @@ function Setting({
   label,
   value,
   last,
+  onClick,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
   last?: boolean;
+  onClick?: () => void;
 }) {
   return (
     <button
+      onClick={onClick}
       className={`flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-bg-elevated ${
         !last ? "border-b border-border-subtle" : ""
       }`}

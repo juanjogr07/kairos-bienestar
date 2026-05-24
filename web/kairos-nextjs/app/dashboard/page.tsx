@@ -7,6 +7,7 @@ import { AppShell } from "@/components/AppShell";
 import { CVWidget } from "@/components/CVWidget";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
+import { createClient } from "@/lib/supabase";
 
 const WAVE_HEIGHTS = [22, 35, 48, 38, 55, 72, 68, 80, 90, 76, 85, 92, 96, 88, 72, 60, 54, 48, 40, 34, 28, 22, 18, 14];
 
@@ -46,10 +47,30 @@ const HABITS_TODAY = [
 
 const WEEK_LABELS = ["L", "M", "X", "J", "V", "S", "D"];
 
+function getGreeting(): string {
+  const h = new Date().getHours();
+  if (h < 12) return "Buenos días";
+  if (h < 19) return "Buenas tardes";
+  return "Buenas noches";
+}
+
+function getTodayLabel(): string {
+  return new Date().toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long" });
+}
+
 export default function DashboardPage() {
   const { checking } = useRequireAuth();
   const [mins, setMins] = useState(0);
+  const [displayName, setDisplayName] = useState<string | null>(null);
   const targetMins = 102;
+
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      const name = user.user_metadata?.full_name as string | undefined;
+      setDisplayName(name ? name.split(" ")[0] : (user.email?.split("@")[0] ?? null));
+    });
+  }, []);
 
   useEffect(() => {
     const duration = 900;
@@ -86,9 +107,9 @@ export default function DashboardPage() {
             <circle cx="12" cy="12" r="4" />
             <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
           </svg>
-          Buenos días, <b style={{ color: "var(--ink)", fontWeight: 600 }}>Alejandro</b>
+          {getGreeting()}{displayName && <>, <b style={{ color: "var(--ink)", fontWeight: 600 }}>{displayName}</b></>}
           <span style={{ width: 3, height: 3, borderRadius: "50%", background: "var(--muted)", opacity: 0.5, display: "inline-block" }} />
-          <span>Domingo, 25 mayo</span>
+          <span>{getTodayLabel()}</span>
         </div>
         <ThemeToggle />
         <Link href="/chat" className="btn-cta">

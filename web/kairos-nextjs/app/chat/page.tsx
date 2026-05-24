@@ -85,7 +85,7 @@ const QUICK_REPLIES = [
 ];
 
 const INITIAL_CORE: Msg[] = [
-  { id: "1", from: "kairos", agentName: "Kairós Core", agentColor: "#8b5cf6", text: "Hola, Alejandro. Vi que llevas 142 min en pantalla hoy. ¿Cómo te sientes ahora mismo?" },
+  { id: "1", from: "kairos", agentName: "Kairós Core", agentColor: "#8b5cf6", text: "Hola. Vi que llevas 142 min en pantalla hoy. ¿Cómo te sientes ahora mismo?" },
   { id: "2", from: "me", text: "Algo cansado, dormí mal de nuevo." },
   { id: "3", from: "kairos", agentName: "Kairós Core", agentColor: "#8b5cf6", text: "Tiene sentido. Los últimos 3 días usaste el teléfono después de las 23:00 por más de 45 min, y eso suele empujar el sueño hacia atrás. ¿Te gustaría que probemos juntos un pequeño ritual nocturno esta semana?", showSuggestion: true },
 ];
