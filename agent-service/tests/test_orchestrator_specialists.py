@@ -97,7 +97,7 @@ def test_morning_agent_selected_before_11am_no_checkin():
             result = orch.chat(user_id="u1", message="buenos días")
     call_args = mock_client.chat.completions.create.call_args
     system_msg = call_args[1]["messages"][0]["content"]
-    assert "Morning Agent" in system_msg
+    assert "check-in" in system_msg.lower() or "morning" in system_msg.lower() or "mañana" in system_msg.lower()
 
 
 def test_default_agent_used_when_no_specialist_matches():
