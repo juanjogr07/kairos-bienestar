@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 from fastapi.testclient import TestClient
 
 USER_ID = "test-user-uuid"
-NOTIFICATION_ID = "notif-1"
+NOTIFICATION_ID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
 HABIT_ID = "habit-1"
 AUTH_HEADERS = {"Authorization": "Bearer test-token"}
 
