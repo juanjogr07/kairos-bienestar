@@ -305,3 +305,55 @@ def test_crisis_takes_priority_over_anomaly():
     ml = {**_ml_zero(), "anomaly_flag": True, "anomaly_severity": 0.95}
     result = _run(_surveys(crisis=True, phq9=18), ml=ml)
     assert result["level"] == "crisis"
+
+
+# ─── P3: fuel_block ──────────────────────────────────────────────────────────
+
+def test_p3_fuel_block_activates():
+    """fuel_block_flag = True → nivel fuel_block, Focus bloqueado."""
+    import triage.tree as tt
+    with patch.object(tt, "get_survey_scores", return_value=_surveys()), \
+         patch.object(tt, "get_ml_scores", return_value=_ml_zero()), \
+         patch.object(tt, "get_usage_summary", return_value=_usage_empty()), \
+         patch.object(tt, "_safe_get_forecast", return_value=_forecast()), \
+         patch.object(tt, "_get_daily_log", return_value={"hours_since_meal": 9.0}):
+        result = tt.run_triage("u1")
+    assert result["level"] == "fuel_block"
+    assert result["playbook_slug"] == "fuel-block"
+
+
+def test_p3_fuel_block_not_activated_under_threshold():
+    import triage.tree as tt
+    with patch.object(tt, "get_survey_scores", return_value=_surveys()), \
+         patch.object(tt, "get_ml_scores", return_value=_ml_zero()), \
+         patch.object(tt, "get_usage_summary", return_value=_usage_empty()), \
+         patch.object(tt, "_safe_get_forecast", return_value=_forecast()), \
+         patch.object(tt, "_get_daily_log", return_value={"hours_since_meal": 7.0}):
+        result = tt.run_triage("u1")
+    assert result["level"] == "default"
+
+
+# ─── P4: sleep_block ─────────────────────────────────────────────────────────
+
+def test_p4_sleep_block_activates():
+    """sleep_hours < 5 AND hour >= 21 → nivel sleep_block."""
+    import triage.tree as tt
+    with patch.object(tt, "get_survey_scores", return_value=_surveys()), \
+         patch.object(tt, "get_ml_scores", return_value=_ml_zero()), \
+         patch.object(tt, "get_usage_summary", return_value=_usage_empty()), \
+         patch.object(tt, "_safe_get_forecast", return_value=_forecast()), \
+         patch.object(tt, "_get_daily_log", return_value={"sleep_hours": 4.0}), \
+         patch.object(tt, "_current_hour", return_value=22):
+        result = tt.run_triage("u1")
+    assert result["level"] == "sleep_block"
+
+
+def test_crisis_takes_priority_over_fuel_block():
+    import triage.tree as tt
+    with patch.object(tt, "get_survey_scores", return_value=_surveys(phq9=18, crisis=True)), \
+         patch.object(tt, "get_ml_scores", return_value=_ml_zero()), \
+         patch.object(tt, "get_usage_summary", return_value=_usage_empty()), \
+         patch.object(tt, "_safe_get_forecast", return_value=_forecast()), \
+         patch.object(tt, "_get_daily_log", return_value={"hours_since_meal": 10.0}):
+        result = tt.run_triage("u1")
+    assert result["level"] == "crisis"

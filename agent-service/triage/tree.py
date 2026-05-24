@@ -1,7 +1,21 @@
+from datetime import datetime, timezone
 from agent.tools.get_survey_scores import get_survey_scores
 from agent.tools.get_ml_scores import get_ml_scores
 from agent.tools.get_usage_summary import get_usage_summary
 from agent.tools.get_cv_scores import get_cv_scores
+
+
+def _get_daily_log(user_id: str) -> dict:
+    """Read today's daily log — isolated for testability."""
+    try:
+        from agent.daily_log import read_today_log
+        return read_today_log(user_id)
+    except Exception:
+        return {}
+
+
+def _current_hour() -> int:
+    return datetime.now(timezone.utc).hour
 
 
 def _safe_get_forecast(user_id: str) -> dict:
@@ -29,6 +43,27 @@ def run_triage(user_id: str) -> dict:
             "playbook_slug": "crisis-escalation",
             "reason": "PHQ-9 o GAD-7 en rango severo",
             "context": {"surveys": surveys},
+        }
+
+    # ── P3 — FUEL BLOCK (horas sin comer > 8) ────────────────────────────────
+    daily_log = _get_daily_log(user_id)
+    hours_since_meal = daily_log.get("hours_since_meal")
+    if hours_since_meal is not None and hours_since_meal > 8:
+        return {
+            "level": "fuel_block",
+            "playbook_slug": "fuel-block",
+            "reason": f"Sin comer hace {hours_since_meal:.1f}h — Focus Agent bloqueado",
+            "context": {"daily_log": daily_log},
+        }
+
+    # ── P4 — SLEEP BLOCK (< 5h de sueño Y es de noche) ───────────────────────
+    sleep_hours = daily_log.get("sleep_hours")
+    if sleep_hours is not None and sleep_hours < 5 and _current_hour() >= 21:
+        return {
+            "level": "sleep_block",
+            "playbook_slug": "sleep-deprivation",
+            "reason": f"Sueño insuficiente ({sleep_hours:.1f}h) y es noche — Focus bloqueado",
+            "context": {"daily_log": daily_log},
         }
 
     phq9 = surveys.get("phq9_score")
