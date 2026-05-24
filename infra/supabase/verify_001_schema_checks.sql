@@ -34,7 +34,8 @@ BEGIN
       ('streaks'),
       ('ml_results'),
       ('playbooks'),
-      ('playbook_chunks')
+      ('playbook_chunks'),
+      ('notifications')
   )
   SELECT string_agg(e.name, ', ')
   INTO missing_tables
@@ -126,7 +127,35 @@ BEGIN
 END $$;
 
 -- ---------------------------------------------------------------------------
--- 5) Verificar funcion RPC de RAG
+-- 5) Verificar indices en notifications (migration 003)
+-- ---------------------------------------------------------------------------
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_indexes
+    WHERE schemaname = 'public'
+      AND tablename = 'notifications'
+      AND indexname = 'idx_notifications_user_unread'
+  ) THEN
+    RAISE EXCEPTION 'FAIL: falta indice idx_notifications_user_unread.';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_indexes
+    WHERE schemaname = 'public'
+      AND tablename = 'notifications'
+      AND indexname = 'idx_notifications_one_per_type_per_day'
+  ) THEN
+    RAISE EXCEPTION 'FAIL: falta indice unico idx_notifications_one_per_type_per_day.';
+  END IF;
+
+  RAISE NOTICE 'PASS: indices de notifications verificados.';
+END $$;
+
+-- ---------------------------------------------------------------------------
+-- 6) Verificar funcion RPC de RAG
 -- ---------------------------------------------------------------------------
 DO $$
 BEGIN
@@ -144,7 +173,7 @@ BEGIN
 END $$;
 
 -- ---------------------------------------------------------------------------
--- 6) Resumen visible de tablas e indices (consulta informativa)
+-- 7) Resumen visible de tablas e indices (consulta informativa)
 -- ---------------------------------------------------------------------------
 SELECT table_name
 FROM information_schema.tables
@@ -156,7 +185,8 @@ WHERE table_schema = 'public'
     'streaks',
     'ml_results',
     'playbooks',
-    'playbook_chunks'
+    'playbook_chunks',
+    'notifications'
   )
 ORDER BY table_name;
 
@@ -164,7 +194,7 @@ SELECT tablename, indexname, indexdef
 FROM pg_indexes
 WHERE schemaname = 'public'
   AND (
-    tablename IN ('usage_events', 'survey_responses')
+    tablename IN ('usage_events', 'survey_responses', 'notifications')
     OR (tablename = 'playbook_chunks' AND indexdef ILIKE '%ivfflat%')
   )
 ORDER BY tablename, indexname;
