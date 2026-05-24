@@ -3,18 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { getProgressSummary, type ProgressSummary } from "@/lib/agent";
-
-// ── Specialist definitions ────────────────────────────────────────────────────
-const SPECIALISTS = [
-  { id: "mood",    label: "Ánimo",    color: "#fb7185", icon: "◐" },
-  { id: "morning", label: "Mañana",   color: "#f59e0b", icon: "☀" },
-  { id: "sleep",   label: "Sueño",    color: "#60a5fa", icon: "◑" },
-  { id: "fuel",    label: "Energía",  color: "#84cc16", icon: "⚡" },
-  { id: "focus",   label: "Foco",     color: "#a78bfa", icon: "◎" },
-  { id: "screen",  label: "Pantalla", color: "#6366f1", icon: "▣" },
-  { id: "insight", label: "Insights", color: "#10b981", icon: "✦" },
-];
+import { getProgressSummary } from "@/lib/agent";
 
 const NAV_ITEMS = [
   {
@@ -52,12 +41,13 @@ const NAV_ITEMS = [
     ),
   },
   {
-    href: "/report",
-    label: "Reporte",
+    href: "/agents",
+    label: "Agentes",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
         strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
-        <path d="M3 3v18h18"/><path d="m7 14 4-4 4 4 5-5"/>
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M12 2v3M12 19v3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M2 12h3M19 12h3M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12"/>
       </svg>
     ),
   },
@@ -74,96 +64,17 @@ const NAV_ITEMS = [
   },
 ];
 
-// Derive which specialists are "active" from progress data + time of day
-function deriveAgentStatus(progress: ProgressSummary | null): Record<string, string> {
-  const hour = new Date().getHours();
-  const log = progress?.today_log ?? {};
-  const status: Record<string, string> = {};
-
-  const morningDone = !!log.morning_mood;
-  const moodScore = (log.morning_mood as number) ?? null;
-  const sleepHours = (log.sleep_hours as number) ?? null;
-  const screenHours = (log.screen_hours as number) ?? null;
-  const hoursSinceMeal = (log.hours_since_meal as number) ?? null;
-
-  // Morning agent
-  if (!morningDone && hour < 11) {
-    status["morning"] = "activo";
-  } else if (morningDone) {
-    status["morning"] = "completado";
-  } else {
-    status["morning"] = "en espera";
-  }
-
-  // Mood
-  if (moodScore !== null && moodScore <= 2) {
-    status["mood"] = "activo";
-  } else if (moodScore !== null) {
-    status["mood"] = `ánimo ${moodScore}/5`;
-  } else {
-    status["mood"] = "sin datos";
-  }
-
-  // Sleep
-  if (sleepHours !== null && sleepHours < 5) {
-    status["sleep"] = "activo · alerta";
-  } else if (sleepHours !== null) {
-    status["sleep"] = `${sleepHours}h anoche`;
-  } else if (hour >= 21) {
-    status["sleep"] = "activo";
-  } else {
-    status["sleep"] = "en espera";
-  }
-
-  // Fuel
-  if (hoursSinceMeal !== null && hoursSinceMeal > 8) {
-    status["fuel"] = "activo · alerta";
-  } else if (hoursSinceMeal !== null) {
-    status["fuel"] = "ok";
-  } else {
-    status["fuel"] = "sin datos";
-  }
-
-  // Screen
-  if (screenHours !== null && screenHours > 3) {
-    status["screen"] = `activo · ${screenHours}h`;
-  } else {
-    const todayMin = progress?.usage_14d?.today_minutes ?? 0;
-    if (todayMin > 180) {
-      status["screen"] = `${Math.round(todayMin)}min hoy`;
-    } else {
-      status["screen"] = "monitoreando";
-    }
-  }
-
-  // Focus
-  const hasFocusSessions = !!(log.focus_sessions);
-  status["focus"] = hasFocusSessions ? "completado" : "en espera";
-
-  // Insight
-  const daysActive = progress?.days_active ?? 0;
-  status["insight"] = daysActive >= 7 ? "disponible" : `${7 - daysActive}d restantes`;
-
-  return status;
-}
-
-function isLive(statusText: string): boolean {
-  return statusText.startsWith("activo");
-}
-
 export function AgentSidebar() {
   const pathname = usePathname();
-  const [progress, setProgress] = useState<ProgressSummary | null>(null);
+  const [streakDays, setStreakDays] = useState(0);
+  const [phase, setPhase] = useState("Fase 1");
 
   useEffect(() => {
-    getProgressSummary().then(setProgress).catch(() => {});
+    getProgressSummary().then((p) => {
+      setStreakDays(p?.current_streak ?? 0);
+      setPhase(p?.phase_label ?? "Fase 1");
+    }).catch(() => {});
   }, []);
-
-  const agentStatus = deriveAgentStatus(progress);
-  const activeAgents = SPECIALISTS.filter((s) => isLive(agentStatus[s.id] ?? ""));
-
-  const streakDays = progress?.current_streak ?? 0;
-  const phase = progress?.phase_label ?? "Fase 1";
 
   return (
     <nav className="agent-sidebar" aria-label="Sistema de agentes">
@@ -176,58 +87,6 @@ export function AgentSidebar() {
           <p style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.1, letterSpacing: "-0.02em" }}>Kairós</p>
           <p style={{ fontSize: 11, opacity: 0.55, marginTop: 2 }}>{phase} · {streakDays}d racha</p>
         </div>
-        {activeAgents.length > 0 && (
-          <span style={{
-            background: "rgba(79,255,176,0.15)",
-            color: "var(--teal-600, #0d9488)",
-            borderRadius: 99,
-            padding: "2px 7px",
-            fontSize: 10,
-            fontWeight: 700,
-            border: "1px solid rgba(79,255,176,0.3)",
-            flexShrink: 0,
-          }}>
-            {activeAgents.length} activo{activeAgents.length > 1 ? "s" : ""}
-          </span>
-        )}
-      </div>
-
-      {/* Agents section */}
-      <div className="agent-sidebar-section">
-        <p className="agent-sidebar-label">SISTEMA DE AGENTES</p>
-        {SPECIALISTS.map((sp) => {
-          const st = agentStatus[sp.id] ?? "en espera";
-          const live = isLive(st);
-          return (
-            <Link
-              key={sp.id}
-              href="/chat"
-              className={`agent-sidebar-row${live ? " live" : ""}`}
-              title={`Abrir chat con agente ${sp.label}`}
-            >
-              <span
-                className="agent-sidebar-dot"
-                style={{
-                  background: sp.color,
-                  // @ts-expect-error css var
-                  "--pulse": sp.color + "80",
-                }}
-              />
-              <span className="agent-sidebar-icon" style={{ color: sp.color }}>{sp.icon}</span>
-              <span style={{ flex: 1, fontSize: 12.5, fontWeight: 500, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {sp.label}
-              </span>
-              <span style={{
-                fontSize: 10.5,
-                color: live ? "var(--teal-600, #0d9488)" : "var(--muted, #9ca3af)",
-                fontWeight: live ? 600 : 400,
-                flexShrink: 0,
-              }}>
-                {st}
-              </span>
-            </Link>
-          );
-        })}
       </div>
 
       {/* Navigation */}

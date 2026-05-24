@@ -3,15 +3,6 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
-const AGENTS = [
-  { name: "Kairós Core", color: "#8b5cf6", status: "principal · activo", live: true },
-  { name: "Ánimo", color: "#fb7185", status: "pendiente hoy", live: false },
-  { name: "Sueño", color: "#60a5fa", status: "pendiente hoy", live: false },
-  { name: "Pantalla", color: "#6366f1", status: "contando · 1h 42m", live: true },
-  { name: "Foco", color: "#a78bfa", status: "en espera", live: false },
-  { name: "Energía", color: "#84cc16", status: "datos completos hoy", live: false },
-];
-
 const INSIGHTS = [
   { title: "Buen ritmo de mañana", desc: "Llevas 2h sin abrir redes sociales. Sigue así.", meta: "9:42 · agente foco", color: "#10b981" },
   { title: "Café tardío detectado", desc: "Tu última taza fue a las 17:30 — podría afectar el sueño.", meta: "ayer · agente sueño", color: "#f59e0b" },
@@ -43,37 +34,18 @@ export function RightPanel() {
         </div>
       </Link>
 
-      {/* Agents section */}
+      {/* Ver agentes CTA */}
       <div className="panel-section fade-up delay-2">
-        <div className="panel-title">
-          Tus agentes
-          <Link href="/report">ver todos →</Link>
-        </div>
-        {AGENTS.map((agent) => (
-          <div
-            key={agent.name}
-            className={`agent-row${agent.live ? " live" : ""}`}
-          >
-            <span
-              className="agent-pulse"
-              style={{
-                background: agent.color,
-                // @ts-expect-error css var
-                "--pulse-color": agent.color + "99",
-              }}
-            />
-            <span style={{ fontSize: "13.5px", fontWeight: 500, flex: 1 }}>{agent.name}</span>
-            <span
-              style={{
-                fontSize: "11.5px",
-                color: agent.live ? "var(--teal-600)" : "var(--muted)",
-                fontWeight: agent.live ? 500 : 400,
-              }}
-            >
-              {agent.status}
-            </span>
+        <Link href="/agents" style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: 12, background: "rgba(139,92,246,.08)", border: "1px solid rgba(139,92,246,.2)", textDecoration: "none" }}>
+          <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg,#8b5cf6,#6366f1)", display: "grid", placeItems: "center", flexShrink: 0 }}>
+            <span style={{ fontWeight: 700, fontSize: 13, color: "#fff" }}>K</span>
           </div>
-        ))}
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: "12.5px", fontWeight: 600, color: "#a78bfa" }}>Ver tus agentes</div>
+            <div style={{ fontSize: "11px", color: "var(--muted)", marginTop: 1 }}>Recopilación · 4 agentes</div>
+          </div>
+          <ChevronRight size={14} style={{ color: "#a78bfa", opacity: 0.7 }} />
+        </Link>
       </div>
 
       {/* Insights section */}

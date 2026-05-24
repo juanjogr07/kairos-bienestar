@@ -8,7 +8,7 @@ const TABS = [
   { href: "/dashboard", label: "Inicio", Icon: LayoutDashboard },
   { href: "/chat", label: "Chat", Icon: MessageCircle },
   { href: "/habits", label: "Hábitos", Icon: CheckSquare },
-  { href: "/report", label: "Reporte", Icon: Sparkles },
+  { href: "/agents", label: "Agentes", Icon: Sparkles },
   { href: "/profile", label: "Perfil", Icon: User },
 ];
 
