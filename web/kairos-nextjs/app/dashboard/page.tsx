@@ -123,7 +123,10 @@ export default function DashboardPage() {
       {/* 1. Check-in card — first thing user sees */}
       <section className="checkin-card fade-up delay-2" aria-label="Check-in del día">
         <div>
-          <div className="cm-badge">Tu check-in del día</div>
+          <div className="cm-badge" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span>Tu check-in del día</span>
+            <span style={{ opacity: 0.55, fontWeight: 400 }}>≈ 4 min</span>
+          </div>
           <h2 style={{ fontFamily: "'Outfit', 'Inter', sans-serif", fontWeight: 600, margin: "0 0 10px", fontSize: "clamp(26px, 3.2vw, 36px)", letterSpacing: "-0.02em", lineHeight: 1.1, color: "#ede9fe" }}>
             Tengo <em style={{ background: "linear-gradient(135deg, #c4b5fd 0%, #818cf8 100%)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", fontStyle: "normal" }}>3 preguntas</em><br />
             para entender tu día.
@@ -132,7 +135,7 @@ export default function DashboardPage() {
             Soy <b style={{ color: "#ede9fe" }}>Kairós</b>, tu copiloto. Solo te interrumpo una vez al día — cuando termines, los agentes de <b style={{ color: "#ede9fe" }}>ánimo</b>, <b style={{ color: "#ede9fe" }}>sueño</b> y <b style={{ color: "#ede9fe" }}>foco</b> ajustan lo que ves aquí.
           </p>
           <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
-            <Link href="/chat" style={{ flex: 1, padding: "12px 16px", borderRadius: 12, background: "linear-gradient(135deg, #8b5cf6, #6366f1)", color: "#fff", fontWeight: 600, fontSize: 14, textAlign: "center", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 10px 20px -10px rgba(99,102,241,.55)", letterSpacing: "-0.01em" }}>
+            <Link href="/chat?mode=checkin" style={{ flex: 1, padding: "12px 16px", borderRadius: 12, background: "linear-gradient(135deg, #8b5cf6, #6366f1)", color: "#fff", fontWeight: 600, fontSize: 14, textAlign: "center", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 10px 20px -10px rgba(99,102,241,.55)", letterSpacing: "-0.01em" }}>
               Empezar ahora
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><path d="M5 12h14M13 5l7 7-7 7" /></svg>
             </Link>
