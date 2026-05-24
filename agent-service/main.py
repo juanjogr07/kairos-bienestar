@@ -7,6 +7,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from rate_limit import limiter
 from routers import chat
+from routers.progress import router as progress_router
 
 app = FastAPI(title="Kairós Agent Service", version="0.1.0")
 app.state.limiter = limiter
@@ -62,6 +63,7 @@ app.add_middleware(
 )
 
 app.include_router(chat.router)
+app.include_router(progress_router)
 
 
 @app.get("/health")
