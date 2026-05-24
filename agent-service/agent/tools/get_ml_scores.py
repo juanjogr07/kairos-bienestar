@@ -9,10 +9,10 @@ def get_ml_scores(user_id: str) -> dict:
     """
     resp = (
         supabase.table("ml_results")
-        .select("result,date")
+        .select("result,computed_at")
         .eq("user_id", user_id)
         .eq("model_type", "full_pipeline")
-        .order("date", desc=True)
+        .order("computed_at", desc=True)
         .limit(1)
         .execute()
     )
