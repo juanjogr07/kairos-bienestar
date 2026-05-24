@@ -16,7 +16,7 @@ client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
 )
 
-MODEL = "anthropic/claude-sonnet-4-5"
+MODEL = "deepseek/deepseek-v4-flash:free"
 
 TOOLS = [
     {

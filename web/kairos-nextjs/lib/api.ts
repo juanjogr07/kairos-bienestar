@@ -24,3 +24,25 @@ export async function submitSurvey(type: "phq9" | "gad7", answers: number[]): Pr
   })
   if (!res.ok) throw new Error(`Survey submit failed: ${res.status}`)
 }
+
+export interface DashboardData {
+  today_usage_min: number
+  active_habits: number
+  total_habit_completions_today: number
+  top_domains: { domain: string; minutes: number }[]
+  last_phq9_score: number | null
+  last_phq9_date: string | null
+  last_gad7_score: number | null
+  last_gad7_date: string | null
+  last_survey_date: string | null
+  onboarding_completed: boolean
+}
+
+export async function getDashboard(): Promise<DashboardData> {
+  if (USE_MOCK) {
+    return { last_phq9_score: null, last_phq9_date: null, last_gad7_score: null, last_gad7_date: null }
+  }
+  const res = await fetch(`${API_URL}/api/v1/dashboard`, { headers: await authHeaders() })
+  if (!res.ok) throw new Error(`Dashboard fetch failed: ${res.status}`)
+  return res.json()
+}

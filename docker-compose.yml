@@ -1,0 +1,64 @@
+version: "3.9"
+
+# Kairós — levantar todo el stack con: docker compose up
+# Prerequisito: copiar .env en la raíz con las keys reales.
+
+services:
+  # ─────────────────────────────────────────────
+  #  API Service — FastAPI :8000
+  # ─────────────────────────────────────────────
+  api-service:
+    build:
+      context: ./api-service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file: .env
+    volumes:
+      - ./api-service:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ─────────────────────────────────────────────
+  #  Agent Service — FastAPI :8001
+  # ─────────────────────────────────────────────
+  agent-service:
+    build:
+      context: ./agent-service
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    env_file: .env
+    volumes:
+      - ./agent-service:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ─────────────────────────────────────────────
+  #  Web — Next.js :3001
+  # ─────────────────────────────────────────────
+  web:
+    build:
+      context: ./web/kairos-nextjs
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3000"
+    env_file: .env
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_AGENT_URL=http://localhost:8001
+    volumes:
+      - ./web/kairos-nextjs:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - api-service
+      - agent-service
