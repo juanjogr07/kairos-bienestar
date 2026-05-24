@@ -44,11 +44,22 @@ CONTEXT_PRIORITY = ["workspace", "bedroom", "couch", "kitchen", "transport", "ou
 
 
 @dataclass
+class DetectedBox:
+    label: str
+    confidence: float
+    x1: float  # normalized 0-1
+    y1: float
+    x2: float
+    y2: float
+
+
+@dataclass
 class EnvironmentResult:
     context: str = "unknown"
     confidence: float = 0.0
     detected_objects: list[str] = field(default_factory=list)
     all_scores: dict[str, float] = field(default_factory=dict)
+    boxes: list[DetectedBox] = field(default_factory=list)
 
 
 class EnvironmentDetector:
@@ -103,11 +114,28 @@ class EnvironmentDetector:
                     best_score = scores[ctx]
                     best_ctx = ctx
 
+            # Build normalized bounding boxes
+            h, w = frame_rgb.shape[:2]
+            box_list: list[DetectedBox] = []
+            for i, cls in enumerate(boxes.cls.tolist()):
+                label = names[int(cls)]
+                conf = float(boxes.conf[i])
+                xyxy = boxes.xyxy[i].tolist()
+                box_list.append(DetectedBox(
+                    label=label,
+                    confidence=round(conf, 3),
+                    x1=round(xyxy[0] / w, 4),
+                    y1=round(xyxy[1] / h, 4),
+                    x2=round(xyxy[2] / w, 4),
+                    y2=round(xyxy[3] / h, 4),
+                ))
+
             return EnvironmentResult(
                 context=best_ctx,
                 confidence=round(best_score, 4),
                 detected_objects=sorted(detected_set),
                 all_scores={k: round(v, 4) for k, v in scores.items()},
+                boxes=box_list,
             )
 
         except Exception as e:

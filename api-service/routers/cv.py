@@ -30,10 +30,20 @@ class PostureOut(BaseModel):
     landmarks_detected: bool
 
 
+class BoxOut(BaseModel):
+    label: str
+    confidence: float
+    x1: float
+    y1: float
+    x2: float
+    y2: float
+
+
 class EnvironmentOut(BaseModel):
     context: str
     confidence: float
     detected_objects: list[str]
+    boxes: list[BoxOut] = []
 
 
 class CVAnalyzeResponse(BaseModel):
