@@ -2,8 +2,13 @@
 -- Seed incremental: 7 dias de usage_events para el usuario demo.
 -- Reemplaza DEMO_USER_UUID con el UUID real de Supabase Auth.
 
--- Opcional: validar UUID antes de ejecutar
--- SELECT id, email FROM auth.users WHERE id = 'DEMO_USER_UUID';
+-- Validar que el UUID existe antes de continuar (falla ruidosamente si no)
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id = 'DEMO_USER_UUID') THEN
+    RAISE EXCEPTION 'DEMO_USER_UUID no encontrado en auth.users — ejecutar create_demo_auth_user primero.';
+  END IF;
+END $$;
 
 -- Limpieza idempotente: elimina solo los ultimos 7 dias del usuario demo.
 DELETE FROM usage_events

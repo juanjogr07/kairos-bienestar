@@ -3,8 +3,13 @@
 -- Reemplaza DEMO_USER_UUID con el UUID real de Supabase Auth.
 -- Requiere schema ml_results con columnas: user_id, date, model_type, result.
 
--- Opcional: validar UUID antes de ejecutar
--- SELECT id, email FROM auth.users WHERE id = 'DEMO_USER_UUID';
+-- Validar que el UUID existe antes de continuar (falla ruidosamente si no)
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id = 'DEMO_USER_UUID') THEN
+    RAISE EXCEPTION 'DEMO_USER_UUID no encontrado en auth.users — ejecutar create_demo_auth_user primero.';
+  END IF;
+END $$;
 
 -- Limpieza idempotente para hoy en los modelos usados en demo.
 DELETE FROM ml_results

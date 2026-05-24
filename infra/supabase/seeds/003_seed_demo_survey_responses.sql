@@ -2,8 +2,13 @@
 -- Seed incremental para encuestas PHQ-9 y GAD-7 del usuario demo.
 -- Reemplaza DEMO_USER_UUID con el UUID real de Supabase Auth.
 
--- Opcional: validar UUID antes de ejecutar
--- SELECT id, email FROM auth.users WHERE id = 'DEMO_USER_UUID';
+-- Validar que el UUID existe antes de continuar (falla ruidosamente si no)
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id = 'DEMO_USER_UUID') THEN
+    RAISE EXCEPTION 'DEMO_USER_UUID no encontrado en auth.users — ejecutar create_demo_auth_user primero.';
+  END IF;
+END $$;
 
 -- Idempotencia: elimina encuestas demo previas de estos tipos.
 DELETE FROM survey_responses
