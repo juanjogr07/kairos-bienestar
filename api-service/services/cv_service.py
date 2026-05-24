@@ -49,6 +49,7 @@ def _neutral_result() -> dict:
             "context": "unknown",
             "confidence": 0.0,
             "detected_objects": [],
+            "boxes": [],
         },
     }
 
@@ -94,6 +95,11 @@ def analyze_frame(
                 "context": result.environment.context,
                 "confidence": result.environment.confidence,
                 "detected_objects": result.environment.detected_objects,
+                "boxes": [
+                    {"label": b.label, "confidence": b.confidence,
+                     "x1": b.x1, "y1": b.y1, "x2": b.x2, "y2": b.y2}
+                    for b in result.environment.boxes
+                ],
             },
         }
     except Exception as exc:
