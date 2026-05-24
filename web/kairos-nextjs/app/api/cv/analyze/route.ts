@@ -1,10 +1,10 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { NextRequest, NextResponse } from "next/server";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 export async function POST(req: NextRequest) {
-  const supabase = await createClient();
+  const supabase = await createServerSupabaseClient();
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
