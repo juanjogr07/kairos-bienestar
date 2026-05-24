@@ -3,6 +3,7 @@
 import { AgentSidebar } from "./AgentSidebar";
 import { RightPanel } from "./RightPanel";
 import { BottomNav } from "./BottomNav";
+import { CursorAurora } from "./CursorAurora";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -12,6 +13,9 @@ interface AppShellProps {
 export function AppShell({ children, showRight = true }: AppShellProps) {
   return (
     <>
+      {/* Cursor aurora (desktop only) */}
+      <CursorAurora />
+
       {/* Ambient background layers */}
       <div className="ambient" aria-hidden="true">
         <div className="blob3" />
