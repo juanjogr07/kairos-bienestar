@@ -26,10 +26,16 @@ export async function submitSurvey(type: "phq9" | "gad7", answers: number[]): Pr
 }
 
 export interface DashboardData {
+  today_usage_min: number
+  active_habits: number
+  total_habit_completions_today: number
+  top_domains: { domain: string; minutes: number }[]
   last_phq9_score: number | null
   last_phq9_date: string | null
   last_gad7_score: number | null
   last_gad7_date: string | null
+  last_survey_date: string | null
+  onboarding_completed: boolean
 }
 
 export async function getDashboard(): Promise<DashboardData> {

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Bell,
   Globe,
@@ -58,7 +59,13 @@ export default function ProfilePage() {
       setName(user.user_metadata?.full_name ?? null);
     });
     getDashboard()
-      .then((d) => setDashboard(d))
+      .then((d) => {
+        setDashboard(d);
+        // GUARDRAIL — no negotiable: scores de crisis derivan a Línea 106
+        if ((d.last_phq9_score ?? 0) >= 15 || (d.last_gad7_score ?? 0) >= 15) {
+          router.push("/crisis");
+        }
+      })
       .catch(() => setDashboard(null))
       .finally(() => setLoadingData(false));
   }, []);
@@ -113,7 +120,7 @@ export default function ProfilePage() {
       >
         <Stat
           icon={<Zap size={18} />}
-          value="4"
+          value={dashboard?.active_habits != null ? String(dashboard.active_habits) : "—"}
           label="Hábitos activos"
           color="text-accent-primary"
           bg="rgba(79,255,176,0.1)"
@@ -151,9 +158,9 @@ export default function ProfilePage() {
         ) : !dashboard?.last_phq9_score && !dashboard?.last_gad7_score ? (
           <p className="text-sm text-text-secondary">
             Completa tu primer screening en{" "}
-            <a href="/onboarding" className="text-accent-primary underline">
+            <Link href="/onboarding" className="text-accent-primary underline">
               Onboarding
-            </a>
+            </Link>
           </p>
         ) : (
           <div className="space-y-3">
@@ -198,7 +205,7 @@ export default function ProfilePage() {
         className="mt-6 animate-fade-up"
         style={{ animationDelay: "300ms" }}
       >
-        <a
+        <Link
           href="/onboarding"
           className="group flex items-center justify-between rounded-lg border border-border-subtle bg-bg-surface p-5 transition-colors hover:border-border-active"
         >
@@ -219,7 +226,7 @@ export default function ProfilePage() {
             size={20}
             className="text-text-secondary transition-transform group-hover:translate-x-1"
           />
-        </a>
+        </Link>
       </section>
 
       {/* Settings */}
