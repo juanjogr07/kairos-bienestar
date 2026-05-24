@@ -1,12 +1,35 @@
+"use client";
+
+import { Sidebar } from "./Sidebar";
+import { RightPanel } from "./RightPanel";
 import { BottomNav } from "./BottomNav";
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+interface AppShellProps {
+  children: React.ReactNode;
+  showRight?: boolean;
+}
+
+export function AppShell({ children, showRight = true }: AppShellProps) {
   return (
-    <div className="min-h-screen bg-bg-deep">
+    <>
+      {/* Ambient background blobs */}
+      <div className="ambient" aria-hidden="true" />
+
+      <div className={`app-shell${showRight ? "" : " no-right"}`}>
+        {/* Icon sidebar — hidden on mobile */}
+        <Sidebar />
+
+        {/* Main content */}
+        <main className="main-content">
+          {children}
+        </main>
+
+        {/* Right panel — hidden below 1100px */}
+        {showRight && <RightPanel />}
+      </div>
+
+      {/* Bottom nav — visible on mobile only */}
       <BottomNav />
-      <main className="page-enter mx-auto max-w-2xl px-5 pb-28 pt-6 md:ml-20 md:max-w-3xl md:px-8 md:pb-12">
-        {children}
-      </main>
-    </div>
+    </>
   );
 }

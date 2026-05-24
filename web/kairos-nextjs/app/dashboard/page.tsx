@@ -2,41 +2,55 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import {
-  Sun,
-  ArrowRight,
-  BarChart3,
-  Zap,
-  Flame,
-  Sparkles,
-  Check,
-} from "lucide-react";
+import { TrendingDown, TrendingUp, Zap, Check } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { StreakBadge, ScoreBadge } from "@/components/Badges";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 
-const SITES = [
-  { name: "YouTube", min: 45, color: "#FF4D6A" },
-  { name: "Instagram", min: 32, color: "#7B6FF0" },
-  { name: "Twitter", min: 18, color: "#5AC8FF" },
-  { name: "TikTok", min: 28, color: "#FF9F5A" },
-  { name: "Reddit", min: 19, color: "#4FFFB0" },
+const WAVE_HEIGHTS = [22, 35, 48, 38, 55, 72, 68, 80, 90, 76, 85, 92, 96, 88, 72, 60, 54, 48, 40, 34, 28, 22, 18, 14];
+
+const PROGRESS_RINGS = [
+  { name: "Pantalla", value: "1h 42m", pct: 57, color: "#10b981" },
+  { name: "Sueño", value: "7.4h", pct: 82, color: "#60a5fa" },
+  { name: "Foco", value: "3 ses.", pct: 42, color: "#a78bfa" },
+  { name: "Ánimo", value: "4.2 / 5", pct: 84, color: "#fb7185" },
 ];
 
 const HABITS_TODAY = [
-  { id: "h1", text: "Sin teléfono la primera hora del día", streak: 3, done: true },
-  { id: "h2", text: "10 min de respiración consciente", streak: 5, done: true },
-  { id: "h3", text: "Caminar al sol 15 min", streak: 1, done: false },
+  {
+    id: "h1",
+    name: "10 min de meditación",
+    sub: "Racha · 7 días · justo después del café",
+    icon: { bg: "#dcfce7", color: "#15803d" },
+    done: true,
+    week: ["done","done","miss","done","done","done","done"],
+  },
+  {
+    id: "h2",
+    name: "Sin pantalla en la cama",
+    sub: "Racha · 5 días · agente sueño protege",
+    icon: { bg: "#fef3c7", color: "#b45309" },
+    done: true,
+    week: ["done","miss","done","done","done","done","done"],
+  },
+  {
+    id: "h3",
+    name: "Escribir a alguien que quieres",
+    sub: "Hoy · pendiente",
+    icon: { bg: "#fce7f3", color: "#be185d" },
+    done: false,
+    week: ["done","done","miss","done","done","miss","today"],
+  },
 ];
+
+const WEEK_LABELS = ["L", "M", "X", "J", "V", "S", "D"];
 
 export default function DashboardPage() {
   const { checking } = useRequireAuth();
   const [count, setCount] = useState(0);
-  const target = 142;
+  const target = 102;
 
-  // Animated count-up
   useEffect(() => {
-    const duration = 800;
+    const duration = 900;
     const start = performance.now();
     let raf = 0;
     const tick = (t: number) => {
@@ -49,214 +63,220 @@ export default function DashboardPage() {
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  const maxMin = Math.max(...SITES.map((s) => s.min));
-
-  if (checking) return <div className="flex h-screen items-center justify-center"><span className="h-6 w-6 animate-spin rounded-full border-2 border-accent-secondary border-t-transparent" /></div>;
+  if (checking) {
+    return (
+      <div style={{ display: "flex", height: "100vh", alignItems: "center", justifyContent: "center" }}>
+        <span style={{ width: 24, height: 24, borderRadius: "50%", border: "2px solid var(--teal-500)", borderTopColor: "transparent", display: "inline-block", animation: "spin 0.8s linear infinite" }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
 
   return (
     <AppShell>
-      {/* Section 1 — Greeting */}
-      <section
-        className="animate-fade-up"
-        style={{ animationDelay: "0ms" }}
-      >
-        <div className="flex items-center gap-2 text-text-secondary">
-          <span className="text-sm font-medium">Buenos días, Alejandro</span>
-          <Sun size={16} className="text-accent-warm-2" />
+      {/* Topbar */}
+      <div className="topbar fade-up delay-1">
+        <div style={{ fontSize: 14, color: "var(--muted)", display: "flex", alignItems: "center", gap: 8 }}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+          </svg>
+          Buenos días, <b style={{ color: "var(--ink)", fontWeight: 600 }}>Alejandro</b>
+          <span style={{ width: 3, height: 3, borderRadius: "50%", background: "var(--muted)", opacity: 0.5, display: "inline-block" }} />
+          <span>Sábado, 23 mayo</span>
         </div>
-        <h1 className="mt-1 text-xl font-bold text-text-primary md:text-2xl">
-          Hoy llevo{" "}
-          <span className="font-mono text-accent-primary">1h 42min</span> en
-          pantalla
-        </h1>
-      </section>
+        <Link href="/chat" className="btn-cta">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15">
+            <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+          Hablar con Kairós
+        </Link>
+      </div>
 
-      {/* Metric cards */}
-      <section
-        className="mt-5 grid grid-cols-2 gap-3 animate-fade-up"
-        style={{ animationDelay: "100ms" }}
-      >
-        <div className="flex items-start gap-3 rounded-lg border border-border-subtle bg-bg-surface p-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-[rgba(79,255,176,0.1)]">
-            <BarChart3 size={20} className="text-accent-primary" />
-          </div>
-          <div>
-            <p className="font-mono text-2xl font-bold text-accent-primary">
-              {count}
-            </p>
-            <p className="text-sm text-text-secondary">min hoy</p>
-          </div>
-        </div>
-        <div className="flex items-start gap-3 rounded-lg border border-border-subtle bg-bg-surface p-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-[rgba(255,159,90,0.12)]">
-            <Zap size={20} className="text-accent-warm" />
-          </div>
-          <div>
-            <p className="font-mono text-2xl font-bold text-accent-warm">2</p>
-            <p className="text-sm text-text-secondary">hábitos</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Insight card */}
-      <section
-        className="mt-6 animate-fade-up"
-        style={{ animationDelay: "200ms" }}
-      >
-        <div className="insight-border-left relative overflow-hidden rounded-lg bg-gradient-card-alive p-5 pl-6">
-          <div className="flex items-center gap-2">
-            <Sparkles size={16} className="text-accent-secondary" />
-            <span className="text-xs font-bold uppercase tracking-wider text-accent-secondary">
-              Insight de hoy
+      {/* Hero — screen time counter + waveform */}
+      <section className="hero-card fade-up delay-2">
+        <div className="hero-label">Tiempo en pantalla · hoy</div>
+        <div className="hero-number">
+          <em>{count}</em>
+          <span className="hero-unit">min hoy</span>
+          <span style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 8 }}>
+            <span className="delta-badge">
+              <TrendingDown size={12} />
+              −18m vs ayer
             </span>
-          </div>
-
-          <p className="mt-3 text-base leading-relaxed text-text-primary">
-            Los últimos 3 días usaste el teléfono después de las{" "}
-            <span className="font-mono text-accent-secondary">23:00</span> por
-            más de{" "}
-            <span className="font-mono text-accent-secondary">45 min</span>.
-            Esto puede estar afectando tu sueño.
-          </p>
-
-          <div className="mt-4 flex items-center gap-2 text-xs text-text-secondary">
-            <span className="flex h-1.5 w-1.5 rounded-full bg-accent-secondary" />
-            Playbook activado:{" "}
-            <span className="font-medium text-text-primary">Uso nocturno</span>
-          </div>
-
-          <Link
-            href="/chat"
-            className="group mt-5 inline-flex items-center gap-2 rounded-md border border-accent-secondary bg-[rgba(123,111,240,0.12)] px-4 py-2.5 text-sm font-bold text-accent-secondary transition-all hover:bg-[rgba(123,111,240,0.2)]"
-          >
-            Habla con Kairós
-            <ArrowRight
-              size={16}
-              strokeWidth={2.5}
-              className="transition-transform group-hover:translate-x-0.5"
-            />
-          </Link>
-        </div>
-      </section>
-
-      {/* Top sites bar chart */}
-      <section
-        className="mt-7 animate-fade-up"
-        style={{ animationDelay: "300ms" }}
-      >
-        <div className="mb-4 flex items-baseline justify-between">
-          <h2 className="text-md font-bold text-text-primary">
-            Top sitios hoy
-          </h2>
-          <span className="text-xs text-text-secondary">
-            142 min totales
           </span>
         </div>
 
-        <div className="space-y-3">
-          {SITES.map((s, i) => {
-            const w = (s.min / maxMin) * 100;
-            return (
-              <div key={s.name} className="flex items-center gap-3">
-                <span className="w-20 shrink-0 truncate text-sm text-text-secondary">
-                  {s.name}
-                </span>
-                <div className="relative h-6 flex-1 overflow-hidden rounded-sm bg-bg-input">
-                  <div
-                    className="h-full rounded-sm animate-bar-grow"
-                    style={
-                      {
-                        background: `linear-gradient(90deg, ${s.color}, #7B6FF0)`,
-                        boxShadow: `0 0 12px ${s.color}55`,
-                        animationDelay: `${400 + i * 80}ms`,
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        ["--bar-w" as any]: `${w}%`,
-                        width: `${w}%`,
-                      } as React.CSSProperties
-                    }
-                  />
-                </div>
-                <span className="w-14 shrink-0 text-right font-mono text-sm font-bold text-text-primary">
-                  {s.min}m
-                </span>
-              </div>
-            );
-          })}
+        {/* Waveform */}
+        <div className="wave" role="img" aria-label="Actividad digital de las últimas 24 horas">
+          {WAVE_HEIGHTS.map((h, i) => (
+            <div
+              key={i}
+              className="wave-bar"
+              style={{
+                height: `${h}%`,
+                opacity: i >= WAVE_HEIGHTS.length - 6 ? 0.95 : 0.45 + (i / WAVE_HEIGHTS.length) * 0.5,
+                background: i >= WAVE_HEIGHTS.length - 6
+                  ? "linear-gradient(180deg, #34d399, #06b6d4)"
+                  : "linear-gradient(180deg, #a7f3d0, #bae6fd)",
+              }}
+            />
+          ))}
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, fontSize: "10.5px", color: "var(--muted)", fontFamily: "'JetBrains Mono', monospace" }}>
+          <span>00h</span><span>06h</span><span>12h</span><span>18h</span><span>ahora</span>
+        </div>
+
+        <div style={{ marginTop: 22, display: "flex", alignItems: "center", gap: 14, color: "var(--ink-2)", fontSize: 14 }}>
+          <span className="delta-badge">
+            <TrendingUp size={12} />
+            Pantalla −18m
+          </span>
+          <span className="delta-badge" style={{ background: "rgba(244,63,94,.08)", color: "#be123c" }}>
+            <TrendingDown size={12} />
+            Sueño −0.3h
+          </span>
+          <span style={{ fontSize: 13, color: "var(--muted)" }}>↑ Ánimo +0.6</span>
         </div>
       </section>
+
+      {/* Check-in card */}
+      <section className="checkin-card fade-up delay-3" aria-label="Check-in del día">
+        <div>
+          <div className="cm-badge">Tu check-in del día</div>
+          <h2 style={{ fontFamily: "'Instrument Serif', serif", fontWeight: 400, fontStyle: "italic", margin: "0 0 10px", fontSize: "clamp(28px, 3.5vw, 38px)", letterSpacing: "-0.02em", lineHeight: 1.1, color: "#ecfdf5" }}>
+            Tengo <em style={{ background: "linear-gradient(135deg, #34d399 0%, #5eead4 100%)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>3 preguntas</em><br />
+            para entender tu día.
+          </h2>
+          <p style={{ fontSize: 14, lineHeight: 1.55, color: "rgba(236,253,245,.75)", margin: "0 0 18px" }}>
+            Soy <b style={{ color: "#ecfdf5" }}>Kairós</b>, tu copiloto. Solo te interrumpo una vez al día — cuando termines, los agentes de <b style={{ color: "#ecfdf5" }}>ánimo</b>, <b style={{ color: "#ecfdf5" }}>sueño</b> y <b style={{ color: "#ecfdf5" }}>foco</b> ajustan lo que ves aquí.
+          </p>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" as const, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,.08)", fontSize: "11.5px", color: "rgba(236,253,245,.5)", alignItems: "center" }}>
+            <span style={{ marginRight: 4, fontWeight: 500, letterSpacing: "0.04em" }}>Toman el check-in:</span>
+            {[
+              { name: "Ánimo", color: "#fb7185" },
+              { name: "Sueño", color: "#60a5fa" },
+              { name: "Foco", color: "#a78bfa" },
+            ].map((a) => (
+              <span key={a.name} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "5px 11px 5px 9px", borderRadius: 999, background: "rgba(255,255,255,.06)", fontSize: "12.5px", fontWeight: 500, color: "#ecfdf5" }}>
+                <span style={{ width: 7, height: 7, borderRadius: "50%", background: a.color, display: "inline-block" }} />
+                {a.name}
+              </span>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+            <Link href="/chat" style={{ flex: 1, padding: "12px 16px", borderRadius: 12, background: "linear-gradient(135deg, #10b981, #06b6d4)", color: "#fff", fontWeight: 600, fontSize: 14, textAlign: "center", textDecoration: "none", display: "block", boxShadow: "0 10px 20px -10px rgba(16,185,129,.5)", letterSpacing: "-0.01em" }}>
+              Empezar check-in →
+            </Link>
+            <button style={{ padding: "12px 16px", borderRadius: 12, background: "rgba(255,255,255,.08)", color: "#ecfdf5", border: "1px solid rgba(255,255,255,.15)", fontFamily: "inherit", fontSize: 14, fontWeight: 500, cursor: "pointer", letterSpacing: "-0.01em", transition: "all .2s" }}>
+              Después
+            </button>
+          </div>
+        </div>
+
+        {/* Kairós orb */}
+        <div className="kairos-orb-wrap">
+          <div className="orb-glow" />
+          <div className="orb-K">K</div>
+        </div>
+      </section>
+
+      {/* Progress rings */}
+      <div className="sect-h fade-up delay-4">
+        <h3>Esta semana</h3>
+        <span className="ln" />
+        <span className="sub">progreso acumulado</span>
+      </div>
+      <div className="progress-grid fade-up delay-4">
+        {PROGRESS_RINGS.map((ring) => (
+          <div key={ring.name} className="pring">
+            <div
+              style={{
+                width: 54,
+                height: 54,
+                borderRadius: "50%",
+                background: `conic-gradient(${ring.color} calc(${ring.pct} * 1%), rgba(11,31,28,.07) 0)`,
+                display: "grid",
+                placeItems: "center",
+                flexShrink: 0,
+                position: "relative",
+              }}
+            >
+              <div style={{ position: "absolute", inset: 5, borderRadius: "50%", background: "var(--surface)" }} />
+              <span style={{ position: "relative", zIndex: 1, fontSize: "12.5px", fontWeight: 700, color: "var(--ink)", fontFamily: "'JetBrains Mono', monospace" }}>
+                {ring.pct}%
+              </span>
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600 }}>{ring.name}</div>
+              <div style={{ fontFamily: "'Instrument Serif', serif", fontStyle: "italic", fontSize: 22, color: "var(--ink)", lineHeight: 1.1, marginTop: 2 }}>{ring.value}</div>
+            </div>
+          </div>
+        ))}
+      </div>
 
       {/* Habits today */}
-      <section
-        className="mt-7 animate-fade-up"
-        style={{ animationDelay: "400ms" }}
-      >
-        <div className="mb-4 flex items-baseline justify-between">
-          <h2 className="text-md font-bold text-text-primary">
-            Hábitos de hoy
-          </h2>
-          <Link
-            href="/habits"
-            className="text-xs font-medium text-accent-primary hover:underline"
-          >
-            Ver todos
-          </Link>
-        </div>
+      <div className="sect-h fade-up" style={{ animationDelay: "0.45s" }}>
+        <h3>Hábitos hoy</h3>
+        <span className="ln" />
+        <Link href="/habits" style={{ fontSize: "12.5px", color: "var(--muted)", textDecoration: "none", fontWeight: 600 }}>
+          ver todos →
+        </Link>
+      </div>
 
-        <ul className="space-y-3">
-          {HABITS_TODAY.map((h) => (
-            <li
-              key={h.id}
-              className="flex items-center gap-3 rounded-lg border border-border-subtle bg-bg-surface p-4"
-            >
-              <button
-                aria-label={h.done ? "Completado" : "Marcar como completado"}
-                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
-                  h.done
-                    ? "border-accent-primary bg-accent-primary text-bg-deep shadow-glow-green"
-                    : "border-border-subtle hover:border-accent-primary"
-                }`}
-              >
-                {h.done && <Check size={14} strokeWidth={3} />}
-              </button>
-              <span
-                className={`flex-1 text-sm ${
-                  h.done
-                    ? "text-text-secondary line-through decoration-accent-primary/50"
-                    : "text-text-primary"
-                }`}
-              >
-                {h.text}
-              </span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-[rgba(255,159,90,0.15)] px-2.5 py-1 text-accent-warm">
-                <Flame size={12} strokeWidth={2.5} />
-                <span className="font-mono text-xs font-bold">{h.streak}</span>
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      {/* Score badges */}
-      <section
-        className="mt-7 animate-fade-up"
-        style={{ animationDelay: "500ms" }}
-      >
-        <div className="mb-4 flex items-baseline justify-between">
-          <h2 className="text-md font-bold text-text-primary">
-            Tu bienestar reciente
-          </h2>
-          <Link
-            href="/profile"
-            className="text-xs font-medium text-text-secondary hover:text-accent-primary"
-          >
-            Historial
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <ScoreBadge test="PHQ-9" score={9} severity="leve" />
-          <ScoreBadge test="GAD-7" score={6} severity="leve" />
-        </div>
-      </section>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }} className="fade-up" >
+        {HABITS_TODAY.map((h) => (
+          <div key={h.id} className={`hb-row${h.done ? " done" : ""}`}>
+            <button className="hb-check" aria-label={h.done ? "Completado" : "Marcar como completado"}>
+              {h.done && <Check size={14} strokeWidth={3} />}
+            </button>
+            <div style={{ width: 34, height: 34, borderRadius: 10, background: h.icon.bg, color: h.icon.color, display: "grid", placeItems: "center", flexShrink: 0 }}>
+              <Zap size={16} />
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: "14.5px", fontWeight: 600, letterSpacing: "-0.01em", color: "var(--ink)", textDecoration: h.done ? "line-through" : "none", textDecorationColor: "rgba(11,31,28,.3)" }}>
+                {h.name}
+              </div>
+              <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>{h.sub}</div>
+            </div>
+            <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+              {h.week.map((d, i) => (
+                <span
+                  key={i}
+                  className={`hb-week-dot${d === "done" ? " done" : d === "miss" ? " miss" : d === "today" ? " today" : ""}`}
+                >
+                  {WEEK_LABELS[i]}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+        <button
+          style={{
+            width: "100%",
+            background: "transparent",
+            border: "1.5px dashed var(--line)",
+            borderRadius: 14,
+            padding: 16,
+            fontFamily: "inherit",
+            fontSize: 14,
+            fontWeight: 500,
+            color: "var(--muted)",
+            cursor: "pointer",
+            transition: "all .15s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = "var(--teal-500)";
+            e.currentTarget.style.color = "var(--teal-700)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = "var(--line)";
+            e.currentTarget.style.color = "var(--muted)";
+          }}
+        >
+          + Añadir un hábito
+        </button>
+      </div>
     </AppShell>
   );
 }
