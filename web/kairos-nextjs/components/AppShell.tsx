@@ -12,8 +12,14 @@ interface AppShellProps {
 export function AppShell({ children, showRight = true }: AppShellProps) {
   return (
     <>
-      {/* Ambient background blobs */}
-      <div className="ambient" aria-hidden="true" />
+      {/* Ambient background layers */}
+      <div className="ambient" aria-hidden="true">
+        <div className="blob3" />
+        <div className="grid-pattern" />
+        <div className="stars" />
+        <div className="beam" />
+        <div className="beam b2" />
+      </div>
 
       <div className={`app-shell${showRight ? "" : " no-right"}`}>
         {/* Icon sidebar — hidden on mobile */}
