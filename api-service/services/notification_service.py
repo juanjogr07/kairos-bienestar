@@ -36,11 +36,15 @@ def check_habit_reminders(user_id: str) -> None:
             )
 
             if not existing.data:
-                supabase.table("notifications").insert(
-                    {
-                        "user_id": user_id,
-                        "type": "habit_reminder",
-                        "title": "¿Cómo va tu hábito?",
-                        "body": f"Llevas {days_since} días sin completar '{habit['name']}'",
-                    }
-                ).execute()
+                try:
+                    supabase.table("notifications").insert(
+                        {
+                            "user_id": user_id,
+                            "type": "habit_reminder",
+                            "title": "¿Cómo va tu hábito?",
+                            "body": f"Llevas {days_since} días sin completar '{habit['name']}'",
+                        }
+                    ).execute()
+                except Exception:
+                    # unique constraint violation — already inserted by a concurrent task
+                    pass

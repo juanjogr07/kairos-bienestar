@@ -16,3 +16,11 @@ CREATE POLICY "Users see own notifications" ON notifications
 -- Índice para listar no leídas rápido
 CREATE INDEX idx_notifications_user_unread
   ON notifications (user_id, read, created_at DESC);
+
+-- Índice único para prevenir notificaciones duplicadas del mismo tipo por día
+-- Garantiza idempotencia en check_habit_reminders ante requests concurrentes
+CREATE UNIQUE INDEX idx_notifications_one_per_type_per_day
+  ON notifications (user_id, type, (created_at::date));
+
+-- ROLLBACK:
+-- DROP TABLE IF EXISTS notifications;

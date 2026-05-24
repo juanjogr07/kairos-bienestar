@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends
 from auth import get_current_user
 from database import supabase
 from services.notification_service import check_habit_reminders
@@ -13,8 +13,11 @@ router = APIRouter(prefix="/api/v1", tags=["habits"])
 
 
 @router.get("/habits", response_model=List[HabitOut])
-async def list_habits(user_id: str = Depends(get_current_user)):
-    check_habit_reminders(user_id)
+async def list_habits(
+    background_tasks: BackgroundTasks,
+    user_id: str = Depends(get_current_user),
+):
+    background_tasks.add_task(check_habit_reminders, user_id)
 
     habits_res = (
         supabase.table("habits")

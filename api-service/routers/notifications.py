@@ -1,6 +1,7 @@
 from typing import List
+from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
 
 from auth import get_current_user
@@ -23,8 +24,11 @@ class MarkReadResponse(BaseModel):
 
 
 @router.get("/notifications", response_model=List[NotificationOut])
-async def list_notifications(user_id: str = Depends(get_current_user)):
-    check_habit_reminders(user_id)
+async def list_notifications(
+    background_tasks: BackgroundTasks,
+    user_id: str = Depends(get_current_user),
+):
+    background_tasks.add_task(check_habit_reminders, user_id)
 
     res = (
         supabase.table("notifications")
@@ -40,13 +44,13 @@ async def list_notifications(user_id: str = Depends(get_current_user)):
 
 @router.post("/notifications/{notification_id}/read", response_model=MarkReadResponse)
 async def mark_notification_read(
-    notification_id: str,
+    notification_id: UUID,
     user_id: str = Depends(get_current_user),
 ):
     res = (
         supabase.table("notifications")
         .update({"read": True})
-        .eq("id", notification_id)
+        .eq("id", str(notification_id))
         .eq("user_id", user_id)
         .execute()
     )
