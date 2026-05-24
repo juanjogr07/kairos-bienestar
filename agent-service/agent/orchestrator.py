@@ -16,7 +16,7 @@ client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
 )
 
-MODEL = "deepseek/deepseek-v4-flash:free"
+MODEL = "nvidia/nemotron-3-super-120b-a12b:free"
 
 TOOLS = [
     {
