@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timezone
 from openai import OpenAI, APIError, AuthenticationError
 from fastapi import HTTPException
 from config import settings
@@ -11,6 +12,80 @@ from agent.tools.get_anomaly_flags import get_anomaly_flags
 from agent.tools.get_forecast import get_forecast
 from agent.tools.search_playbooks import search_playbooks
 from agent import memory as mem
+from agent.user_context import UserContext
+from agent.daily_log import read_today_log, upsert_daily_log
+from agent.specialists.morning_agent import MorningAgent
+from agent.specialists.mood_agent import MoodAgent, CRISIS_KEYWORDS
+from agent.specialists.sleep_agent import SleepAgent
+from agent.specialists.focus_agent import FocusAgent
+from agent.specialists.screen_agent import ScreenAgent
+from agent.specialists.fuel_agent import FuelAgent
+
+_SPECIALISTS = [MoodAgent(), FuelAgent(), SleepAgent(), FocusAgent(), ScreenAgent(), MorningAgent()]
+
+
+def _current_hour() -> int:
+    return datetime.now(timezone.utc).hour
+
+
+def _build_user_context(user_id: str) -> UserContext:
+    """Assemble UserContext from Supabase in one pass."""
+    surveys = get_survey_scores(user_id)
+    log = read_today_log(user_id)
+    hour = _current_hour()
+
+    days_active = 0
+    days_since_active = 0
+    current_streak = 0
+    try:
+        from database import supabase
+        from datetime import date
+        res = (supabase.table("streaks")
+               .select("current_streak,longest_streak,last_completion")
+               .eq("user_id", user_id)
+               .limit(1).execute())
+        if res.data:
+            row = res.data[0]
+            current_streak = row.get("current_streak", 0)
+            last = row.get("last_completion")
+            if last:
+                days_since_active = (date.today() - date.fromisoformat(str(last))).days
+                days_active = current_streak + days_since_active
+    except Exception:
+        pass
+
+    return UserContext(
+        user_id=user_id,
+        phq9_baseline=surveys.get("phq9_prev_score"),
+        gad7_baseline=surveys.get("gad7_prev_score"),
+        phq9_current=surveys.get("phq9_score"),
+        gad7_current=surveys.get("gad7_score"),
+        morning_mood=log.get("morning_mood"),
+        sleep_quality=log.get("sleep_quality"),
+        has_event_today=bool(log.get("has_event_today", False)),
+        sleep_hours=log.get("sleep_hours"),
+        screen_hours=log.get("screen_hours"),
+        physical_energy=log.get("physical_energy"),
+        hours_since_meal=log.get("hours_since_meal"),
+        checkin_done=bool(log.get("morning_mood")),
+        nocturnal_ratio=log.get("nocturnal_ratio", 0.0),
+        days_active=days_active,
+        days_since_active=days_since_active,
+        current_streak=current_streak,
+        is_evening=hour >= 21,
+    )
+
+
+def _select_specialist(ctx: UserContext, hour: int):
+    """Return the best specialist for this context, or None to use default."""
+    for specialist in _SPECIALISTS:
+        if specialist.name == "morning":
+            if specialist.should_activate(ctx, hour=hour):
+                return specialist
+        else:
+            if specialist.should_activate(ctx):
+                return specialist
+    return None
 
 client = OpenAI(
     api_key=settings.anthropic_api_key,
@@ -177,7 +252,7 @@ def _execute_tool(tool_name: str, tool_input: dict) -> str:
 def chat(user_id: str, message: str) -> dict:
     triage_result = run_triage(user_id)
 
-    # GUARDRAIL — executes before LLM, cannot be bypassed by prompt or history
+    # GUARDRAIL — hard crisis bypass (triage score)
     if triage_result["level"] == "crisis":
         mem.add_message(user_id, "user", message)
         mem.add_message(user_id, "assistant", CRISIS_RESPONSE)
@@ -186,6 +261,24 @@ def chat(user_id: str, message: str) -> dict:
             "playbook_activated": "crisis-escalation",
             "suggested_habit": None,
         }
+
+    # Build UserContext and check crisis keywords in message
+    ctx = _build_user_context(user_id)
+    hour = _current_hour()
+
+    if any(kw in message.lower() for kw in CRISIS_KEYWORDS):
+        mem.add_message(user_id, "user", message)
+        mem.add_message(user_id, "assistant", CRISIS_RESPONSE)
+        return {
+            "reply": CRISIS_RESPONSE,
+            "playbook_activated": "crisis-escalation",
+            "suggested_habit": None,
+        }
+
+    # Select specialist
+    specialist = _select_specialist(ctx, hour)
+    active_system_prompt = specialist.system_prompt(ctx) if specialist else SYSTEM_PROMPT
+    active_tools = specialist.tools if specialist else TOOLS
 
     triage_context = (
         f"\n\nCONTEXTO DE TRIAJE:\n"
@@ -198,7 +291,7 @@ def chat(user_id: str, message: str) -> dict:
     mem.add_message(user_id, "user", message)
 
     messages = [
-        {"role": "system", "content": SYSTEM_PROMPT + triage_context},
+        {"role": "system", "content": active_system_prompt + triage_context},
         *mem.get_history(user_id),
     ]
 
@@ -209,7 +302,7 @@ def chat(user_id: str, message: str) -> dict:
             response = client.chat.completions.create(
                 model=MODEL,
                 max_tokens=1024,
-                tools=TOOLS,
+                tools=active_tools or None,
                 messages=messages,
             )
         except AuthenticationError as exc:
