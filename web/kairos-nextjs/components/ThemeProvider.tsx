@@ -9,23 +9,23 @@ interface ThemeCtx {
   toggleTheme: () => void;
 }
 
-const ThemeContext = createContext<ThemeCtx>({ theme: "dark", toggleTheme: () => {} });
+const ThemeContext = createContext<ThemeCtx>({ theme: "light", toggleTheme: () => {} });
 
 export function useTheme() {
   return useContext(ThemeContext);
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("dark");
+  const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
     const saved = localStorage.getItem("kairos-theme") as Theme | null;
-    const resolved = saved ?? "dark";
+    const resolved = saved ?? "light";
     setTheme(resolved);
-    if (resolved === "light") {
-      document.body.classList.remove("theme-deep");
-    } else {
+    if (resolved === "dark") {
       document.body.classList.add("theme-deep");
+    } else {
+      document.body.classList.remove("theme-deep");
     }
   }, []);
 

@@ -152,7 +152,7 @@ export default function AgentsPage() {
             { n: "02", title: "Tú decides cuándo hablar", desc: "Una recopilación diaria de 4 min con los subagentes — o conversación libre con Kairós Core." },
             { n: "03", title: "Kairós Core une los hilos", desc: "El agente principal lee lo que aprendieron los demás y te devuelve patrones, no datos sueltos." },
           ].map((c) => (
-            <div key={c.n} style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 14, padding: "16px" }}>
+            <div key={c.n} style={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: 14, padding: "16px" }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "var(--muted)", marginBottom: 8, fontFamily: "'JetBrains Mono',monospace" }}>{c.n}</div>
               <div style={{ fontWeight: 600, fontSize: 13, color: "var(--ink)", marginBottom: 6, lineHeight: 1.3 }}>{c.title}</div>
               <div style={{ fontSize: 12, color: "var(--ink-2)", lineHeight: 1.5 }}>{c.desc}</div>
@@ -185,7 +185,7 @@ export default function AgentsPage() {
 
         <Link
           href="/chat?mode=core"
-          style={{ display: "flex", alignItems: "center", gap: 12, padding: "15px 18px", borderRadius: 14, background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.1)", color: "var(--ink)", textDecoration: "none" }}
+          style={{ display: "flex", alignItems: "center", gap: 12, padding: "15px 18px", borderRadius: 14, background: "var(--surface)", border: "1px solid var(--line)", color: "var(--ink)", textDecoration: "none" }}
         >
           <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,#8b5cf6,#6366f1)", display: "grid", placeItems: "center", flexShrink: 0 }}>
             <span style={{ fontWeight: 700, fontSize: 14, color: "#fff" }}>K</span>
@@ -198,7 +198,7 @@ export default function AgentsPage() {
       </div>
 
       {/* ── Kairós Core card ─────────────────────── */}
-      <div style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(139,92,246,.2)", borderRadius: 16, padding: "20px", marginBottom: 14, position: "relative", overflow: "hidden" }}>
+      <div style={{ background: "var(--surface)", border: "1px solid rgba(139,92,246,.2)", borderRadius: 16, padding: "20px", marginBottom: 14, position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg,#8b5cf6,#6366f1,#8b5cf6)" }} />
 
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, flexWrap: "wrap" as const }}>
@@ -209,7 +209,7 @@ export default function AgentsPage() {
           <div style={{ marginLeft: "auto", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 99, background: "rgba(139,92,246,.12)", color: "#a78bfa", border: "1px solid rgba(139,92,246,.2)" }}>100%</div>
         </div>
 
-        <div style={{ height: 2, background: "rgba(255,255,255,.07)", borderRadius: 99, marginBottom: 16 }}>
+        <div style={{ height: 2, background: "var(--line)", borderRadius: 99, marginBottom: 16 }}>
           <div style={{ height: "100%", width: "100%", background: "linear-gradient(90deg,#8b5cf6,#6366f1)", borderRadius: 99 }} />
         </div>
 
@@ -235,7 +235,7 @@ export default function AgentsPage() {
         {AGENTS_ACTIVE.map((agent) => {
           const pending = agent.data.filter((d) => !d.done);
           return (
-            <div key={agent.id} style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 16, padding: "16px", display: "flex", flexDirection: "column" as const }}>
+            <div key={agent.id} style={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: 16, padding: "16px", display: "flex", flexDirection: "column" as const }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                 <span style={{ width: 8, height: 8, borderRadius: "50%", background: agent.color, display: "inline-block" }} />
                 <span style={{ fontWeight: 700, fontSize: 13.5, color: "var(--ink)", flex: 1 }}>{agent.name}</span>
@@ -265,7 +265,7 @@ export default function AgentsPage() {
                 >
                   Conversar ({agent.conversations}) →
                 </Link>
-                <button style={{ padding: "9px 12px", borderRadius: 10, background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.08)", color: "var(--muted)", fontFamily: "inherit", fontSize: 12, fontWeight: 500, cursor: "pointer" }}>
+                <button style={{ padding: "9px 12px", borderRadius: 10, background: "var(--surface)", border: "1px solid var(--line)", color: "var(--muted)", fontFamily: "inherit", fontSize: 12, fontWeight: 500, cursor: "pointer" }}>
                   Detalle
                 </button>
               </div>
@@ -277,7 +277,7 @@ export default function AgentsPage() {
       {/* ── Passive agents ───────────────────────── */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 40 }}>
         {AGENTS_PASSIVE.map((agent) => (
-          <div key={agent.id} style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.08)", borderRadius: 16, padding: "16px", display: "flex", flexDirection: "column" as const }}>
+          <div key={agent.id} style={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: 16, padding: "16px", display: "flex", flexDirection: "column" as const }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
               <span style={{ width: 8, height: 8, borderRadius: "50%", background: agent.color, display: "inline-block" }} />
               <span style={{ fontWeight: 700, fontSize: 13.5, color: "var(--ink)", flex: 1 }}>{agent.name}</span>
@@ -298,7 +298,7 @@ export default function AgentsPage() {
               <button style={{ flex: 1, padding: "9px 10px", borderRadius: 10, background: `${agent.color}10`, border: `1px solid ${agent.color}25`, color: agent.color, fontFamily: "inherit", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>
                 Al día →
               </button>
-              <button style={{ padding: "9px 12px", borderRadius: 10, background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.08)", color: "var(--muted)", fontFamily: "inherit", fontSize: 12, fontWeight: 500, cursor: "pointer" }}>
+              <button style={{ padding: "9px 12px", borderRadius: 10, background: "var(--surface)", border: "1px solid var(--line)", color: "var(--muted)", fontFamily: "inherit", fontSize: 12, fontWeight: 500, cursor: "pointer" }}>
                 Detalle
               </button>
             </div>
