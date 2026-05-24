@@ -3,6 +3,7 @@ from openai import OpenAI, APIError, AuthenticationError
 from fastapi import HTTPException
 from config import settings
 from triage.tree import run_triage
+from triage.crisis_escalation import CRISIS_RESPONSE as _CRISIS_RESPONSE
 from agent.tools.get_usage_summary import get_usage_summary
 from agent.tools.get_survey_scores import get_survey_scores
 from agent.tools.get_ml_scores import get_ml_scores
@@ -104,14 +105,7 @@ TOOLS = [
 
 HABIT_MARKER = "HÁBITO_SUGERIDO:"
 
-CRISIS_RESPONSE = """Noto que estás atravesando un momento muy difícil.
-Gracias por confiar en mí, y quiero asegurarme de que recibas el apoyo adecuado.
-
-📞 **Línea 106 — Salud mental**
-Gratuita · Confidencial · Disponible 24 horas
-Llama ahora si necesitas hablar con alguien.
-
-Estoy aquí para acompañarte, pero en este momento lo más importante es que te conectes con un profesional."""
+CRISIS_RESPONSE = _CRISIS_RESPONSE
 
 WEEKLY_REPORT_PROMPT = """Genera un reporte semanal de bienestar digital en formato Markdown.
 Usa PRIMERO get_usage_summary (days=7), get_survey_scores y get_ml_scores para recopilar los datos antes de redactar.

@@ -15,9 +15,15 @@ from pathlib import Path
 
 import joblib
 import numpy as np
-from xgboost import XGBRegressor
 
 from services.ml.features import FEATURE_NAMES, build_feature_vector
+
+try:
+    from xgboost import XGBRegressor as _XGBRegressor
+    _XGBOOST_AVAILABLE = True
+except ImportError:
+    _XGBRegressor = None
+    _XGBOOST_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
@@ -38,9 +44,12 @@ def _load_or_train() -> dict:
         return _cached_artifacts
 
     if MODEL_PATH.exists():
-        _cached_artifacts = joblib.load(MODEL_PATH)
-        logger.info("XGBoost mood model loaded from %s", MODEL_PATH)
-        return _cached_artifacts
+        try:
+            _cached_artifacts = joblib.load(MODEL_PATH)
+            logger.info("XGBoost mood model loaded from %s", MODEL_PATH)
+            return _cached_artifacts
+        except Exception as exc:
+            logger.warning("Failed to load model from %s (%s) — retraining fallback.", MODEL_PATH, exc)
 
     logger.warning(
         "Model not found at %s — training fallback. "
@@ -52,6 +61,9 @@ def _load_or_train() -> dict:
 
 
 def _train_fallback() -> dict:
+    if not _XGBOOST_AVAILABLE:
+        return {"model": None, "feature_cols": FEATURE_NAMES}
+
     import pandas as pd
 
     if SYNTHETIC_PATH.exists():
@@ -70,7 +82,7 @@ def _train_fallback() -> dict:
         y = rng.uniform(-3, 3, n)
         feature_cols = FEATURE_NAMES
 
-    model = XGBRegressor(
+    model = _XGBRegressor(
         n_estimators=100,
         max_depth=4,
         learning_rate=0.1,
@@ -105,6 +117,14 @@ def predict_mood_change(features: dict) -> dict:
     """
     artifacts = _load_or_train()
     feature_cols = artifacts["feature_cols"]
+
+    if artifacts["model"] is None:
+        return {
+            "predicted_phq9_change": 0.0,
+            "direction": "stable",
+            "confidence": 0.0,
+            "risk_window_days": RISK_WINDOW_DAYS,
+        }
 
     X = np.array([[features[k] for k in feature_cols]], dtype=float)
     raw = float(artifacts["model"].predict(X)[0])
