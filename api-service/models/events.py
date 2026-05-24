@@ -14,8 +14,16 @@ class UsageEvent(BaseModel):
     @classmethod
     def sanitize_domain(cls, v: str) -> str:
         v = v.lower().strip()
+        # Strip protocol
+        for prefix in ("https://", "http://"):
+            if v.startswith(prefix):
+                v = v[len(prefix):]
+                break
+        # Strip www.
         if v.startswith("www."):
             v = v[4:]
+        # Strip path, query string, port
+        v = v.split("/")[0].split("?")[0].split("#")[0].split(":")[0]
         return v
 
 
