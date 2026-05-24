@@ -8,29 +8,29 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        /* ── Design System v2 (light + airy) ── */
-        bg: "#f3f8f6",
-        "bg-tint": "#eaf3f0",
+        /* ── Design System v3 (purple/violet) ── */
+        bg: "#f7f6ff",
+        "bg-tint": "#efeeff",
         surface: "#ffffff",
-        ink: "#0b1f1c",
-        "ink-2": "#2a3f3b",
-        muted: "#607872",
+        ink: "#1a0f3d",
+        "ink-2": "#3b2e6e",
+        muted: "#7a6c9e",
 
-        "teal-50": "#e6f7f3",
-        "teal-100": "#c6efe2",
-        "teal-300": "#5fd6b2",
-        "teal-500": "#10b981",
-        "teal-600": "#0c9a6c",
-        "teal-700": "#0a7a55",
+        "teal-50": "#f5f3ff",
+        "teal-100": "#ddd6fe",
+        "teal-300": "#b5b5ff",
+        "teal-500": "#8b5cf6",
+        "teal-600": "#7c3aed",
+        "teal-700": "#6d28d9",
 
-        "aqua-300": "#7cd9e0",
-        "aqua-500": "#06b6d4",
-        "aqua-600": "#0891b2",
+        "aqua-300": "#a5b4fc",
+        "aqua-500": "#6366f1",
+        "aqua-600": "#4f46e5",
 
         "blue-300": "#7dc3ff",
-        "blue-500": "#3b82f6",
-        "blue-600": "#2563eb",
-        "blue-700": "#1d4ed8",
+        "blue-500": "#6366f1",
+        "blue-600": "#4f46e5",
+        "blue-700": "#4338ca",
 
         "lime-500": "#84cc16",
         "amber-500": "#f59e0b",
@@ -56,7 +56,8 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
-        serif: ["Instrument Serif", "Georgia", "serif"],
+        serif: ["Outfit", "Inter", "sans-serif"],
+        display: ["Outfit", "Inter", "sans-serif"],
         mono: ["JetBrains Mono", "monospace"],
       },
       borderRadius: {
@@ -78,7 +79,7 @@ const config: Config = {
         "gradient-brand": "linear-gradient(135deg, #070B14 0%, #0D1A3E 50%, #0A1628 100%)",
         "gradient-cta": "linear-gradient(135deg, #4FFFB0 0%, #00D4FF 100%)",
         "gradient-card-alive": "linear-gradient(135deg, #141D35 0%, #1A2B4A 100%)",
-        "gradient-kairos": "linear-gradient(135deg, #10b981 0%, #06b6d4 60%, #3b82f6 100%)",
+        "gradient-kairos": "linear-gradient(135deg, #8b5cf6 0%, #6366f1 60%, #3b82f6 100%)",
       },
       keyframes: {
         fadeUp: {

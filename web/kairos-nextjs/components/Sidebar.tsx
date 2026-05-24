@@ -86,7 +86,7 @@ export function Sidebar() {
     <nav className="sidebar-desktop" aria-label="Navegación principal">
       {/* Logo */}
       <Link href="/dashboard" className="sidebar-logo" aria-label="Kairós">
-        <span style={{ fontFamily: "'Instrument Serif', serif", fontStyle: "italic", fontSize: 24, lineHeight: 1, letterSpacing: "-0.02em" }}>
+        <span style={{ fontFamily: "'Outfit', 'Inter', sans-serif", fontWeight: 700, fontSize: 24, lineHeight: 1, letterSpacing: "-0.03em" }}>
           K
         </span>
       </Link>

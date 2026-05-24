@@ -11,8 +11,8 @@ const WAVE_HEIGHTS = [22, 35, 48, 38, 55, 72, 68, 80, 90, 76, 85, 92, 96, 88, 72
 
 const PROGRESS_RINGS = [
   { name: "Sueño", value: "6/7", target: "≥ 7h", pct: 86, color: "#60a5fa" },
-  { name: "Pantalla", value: "4/7", target: "≤ 4h", pct: 57, color: "#06b6d4" },
-  { name: "Movimiento", value: "5/7", target: "8k pasos", pct: 71, color: "#10b981" },
+  { name: "Pantalla", value: "4/7", target: "≤ 4h", pct: 57, color: "#6366f1" },
+  { name: "Movimiento", value: "5/7", target: "8k pasos", pct: 71, color: "#8b5cf6" },
   { name: "Foco", value: "3/7", target: "2 sesiones", pct: 43, color: "#a78bfa" },
 ];
 
@@ -101,30 +101,30 @@ export default function DashboardPage() {
       <section className="checkin-card fade-up delay-2" aria-label="Check-in del día">
         <div>
           <div className="cm-badge">Tu check-in del día</div>
-          <h2 style={{ fontFamily: "'Instrument Serif', serif", fontWeight: 400, fontStyle: "italic", margin: "0 0 10px", fontSize: "clamp(26px, 3.2vw, 36px)", letterSpacing: "-0.02em", lineHeight: 1.1, color: "#ecfdf5" }}>
-            Tengo <em style={{ background: "linear-gradient(135deg, #34d399 0%, #5eead4 100%)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>3 preguntas</em><br />
+          <h2 style={{ fontFamily: "'Outfit', 'Inter', sans-serif", fontWeight: 600, margin: "0 0 10px", fontSize: "clamp(26px, 3.2vw, 36px)", letterSpacing: "-0.02em", lineHeight: 1.1, color: "#ede9fe" }}>
+            Tengo <em style={{ background: "linear-gradient(135deg, #c4b5fd 0%, #818cf8 100%)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", fontStyle: "normal" }}>3 preguntas</em><br />
             para entender tu día.
           </h2>
-          <p style={{ fontSize: 14, lineHeight: 1.55, color: "rgba(236,253,245,.75)", margin: "0 0 18px" }}>
-            Soy <b style={{ color: "#ecfdf5" }}>Kairós</b>, tu copiloto. Solo te interrumpo una vez al día — cuando termines, los agentes de <b style={{ color: "#ecfdf5" }}>ánimo</b>, <b style={{ color: "#ecfdf5" }}>sueño</b> y <b style={{ color: "#ecfdf5" }}>foco</b> ajustan lo que ves aquí.
+          <p style={{ fontSize: 14, lineHeight: 1.55, color: "rgba(237,233,254,.75)", margin: "0 0 18px" }}>
+            Soy <b style={{ color: "#ede9fe" }}>Kairós</b>, tu copiloto. Solo te interrumpo una vez al día — cuando termines, los agentes de <b style={{ color: "#ede9fe" }}>ánimo</b>, <b style={{ color: "#ede9fe" }}>sueño</b> y <b style={{ color: "#ede9fe" }}>foco</b> ajustan lo que ves aquí.
           </p>
           <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
-            <Link href="/chat" style={{ flex: 1, padding: "12px 16px", borderRadius: 12, background: "linear-gradient(135deg, #10b981, #06b6d4)", color: "#fff", fontWeight: 600, fontSize: 14, textAlign: "center", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 10px 20px -10px rgba(16,185,129,.5)", letterSpacing: "-0.01em" }}>
+            <Link href="/chat" style={{ flex: 1, padding: "12px 16px", borderRadius: 12, background: "linear-gradient(135deg, #8b5cf6, #6366f1)", color: "#fff", fontWeight: 600, fontSize: 14, textAlign: "center", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 10px 20px -10px rgba(99,102,241,.55)", letterSpacing: "-0.01em" }}>
               Empezar ahora
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><path d="M5 12h14M13 5l7 7-7 7" /></svg>
             </Link>
-            <button style={{ padding: "12px 16px", borderRadius: 12, background: "rgba(255,255,255,.08)", color: "#ecfdf5", border: "1px solid rgba(255,255,255,.15)", fontFamily: "inherit", fontSize: 14, fontWeight: 500, cursor: "pointer", letterSpacing: "-0.01em" }}>
+            <button style={{ padding: "12px 16px", borderRadius: 12, background: "rgba(255,255,255,.08)", color: "#ede9fe", border: "1px solid rgba(255,255,255,.15)", fontFamily: "inherit", fontSize: 14, fontWeight: 500, cursor: "pointer", letterSpacing: "-0.01em" }}>
               Recordar después
             </button>
           </div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,.08)", fontSize: "11.5px", color: "rgba(236,253,245,.5)", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,.08)", fontSize: "11.5px", color: "rgba(237,233,254,.5)", alignItems: "center" }}>
             <span style={{ marginRight: 4, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase", fontSize: 11 }}>HOY participan</span>
             {[
               { name: "Ánimo", color: "#fb7185" },
               { name: "Sueño", color: "#60a5fa" },
               { name: "Foco", color: "#a78bfa" },
             ].map((a) => (
-              <span key={a.name} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "5px 11px 5px 9px", borderRadius: 999, background: "rgba(255,255,255,.06)", fontSize: "12.5px", fontWeight: 500, color: "#ecfdf5" }}>
+              <span key={a.name} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "5px 11px 5px 9px", borderRadius: 999, background: "rgba(255,255,255,.06)", fontSize: "12.5px", fontWeight: 500, color: "#ede9fe" }}>
                 <span style={{ width: 7, height: 7, borderRadius: "50%", background: a.color, display: "inline-block" }} />
                 {a.name}
               </span>
@@ -160,8 +160,8 @@ export default function DashboardPage() {
                 height: `${h}%`,
                 opacity: i >= WAVE_HEIGHTS.length - 6 ? 0.95 : 0.4 + (i / WAVE_HEIGHTS.length) * 0.5,
                 background: i >= WAVE_HEIGHTS.length - 6
-                  ? "linear-gradient(180deg, #34d399, #06b6d4)"
-                  : "linear-gradient(180deg, #a7f3d0, #bae6fd)",
+                  ? "linear-gradient(180deg, #c4b5fd, #6366f1)"
+                  : "linear-gradient(180deg, #ddd6fe, #c7d2fe)",
               }}
             />
           ))}
@@ -186,13 +186,13 @@ export default function DashboardPage() {
       {/* 3. Insight card from Kairós */}
       <div className="insight-card fade-up delay-4">
         <div className="insight-avatar">
-          <span style={{ fontFamily: "'Instrument Serif', serif", fontStyle: "italic", fontSize: 22, color: "#fff", lineHeight: 1 }}>K</span>
+          <span style={{ fontFamily: "'Outfit', 'Inter', sans-serif", fontWeight: 700, fontSize: 22, color: "#fff", lineHeight: 1 }}>K</span>
         </div>
         <div>
           <div style={{ marginBottom: 6 }}>
             <span className="insight-pill">Playbook · Uso nocturno</span>
           </div>
-          <h3 style={{ fontFamily: "'Instrument Serif', serif", fontWeight: 400, fontStyle: "italic", margin: "0 0 8px", fontSize: 20, letterSpacing: "-0.01em", color: "var(--ink)" }}>
+          <h3 style={{ fontFamily: "'Outfit', 'Inter', sans-serif", fontWeight: 600, margin: "0 0 8px", fontSize: 20, letterSpacing: "-0.01em", color: "var(--ink)" }}>
             Tus mejores días empiezan con sueño largo.
           </h3>
           <p style={{ fontSize: 14, lineHeight: 1.55, color: "var(--ink-2)", margin: 0 }}>
@@ -202,7 +202,7 @@ export default function DashboardPage() {
             hace 12 min · agente sueño
           </div>
         </div>
-        <button style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 14px", borderRadius: 12, background: "linear-gradient(135deg, #0c9a6c, #0891b2)", color: "#fff", border: "none", fontFamily: "inherit", fontWeight: 600, fontSize: 13, cursor: "pointer", flexShrink: 0, boxShadow: "0 8px 18px -10px rgba(16,185,129,.5)", letterSpacing: "-0.01em" }}>
+        <button style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 14px", borderRadius: 12, background: "linear-gradient(135deg, #7c3aed, #4f46e5)", color: "#fff", border: "none", fontFamily: "inherit", fontWeight: 600, fontSize: 13, cursor: "pointer", flexShrink: 0, boxShadow: "0 8px 18px -10px rgba(99,102,241,.5)", letterSpacing: "-0.01em" }}>
           Activar
           <ChevronRight size={14} />
         </button>
@@ -236,7 +236,7 @@ export default function DashboardPage() {
             </div>
             <div style={{ minWidth: 0 }}>
               <div style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase" as const, letterSpacing: "0.1em", fontWeight: 600 }}>{ring.name}</div>
-              <div style={{ fontFamily: "'Instrument Serif', serif", fontStyle: "italic", fontSize: 20, color: "var(--ink)", lineHeight: 1.1, marginTop: 2 }}>{ring.target}</div>
+              <div style={{ fontFamily: "'Outfit', 'Inter', sans-serif", fontWeight: 600, fontSize: 20, color: "var(--ink)", lineHeight: 1.1, marginTop: 2 }}>{ring.target}</div>
             </div>
           </div>
         ))}

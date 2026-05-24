@@ -4,10 +4,10 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
 const AGENTS = [
-  { name: "Kairós Core", color: "#06b6d4", status: "principal · activo", live: true },
+  { name: "Kairós Core", color: "#8b5cf6", status: "principal · activo", live: true },
   { name: "Ánimo", color: "#fb7185", status: "pendiente hoy", live: false },
   { name: "Sueño", color: "#60a5fa", status: "pendiente hoy", live: false },
-  { name: "Pantalla", color: "#10b981", status: "contando · 1h 42m", live: true },
+  { name: "Pantalla", color: "#6366f1", status: "contando · 1h 42m", live: true },
   { name: "Foco", color: "#a78bfa", status: "en espera", live: false },
   { name: "Energía", color: "#84cc16", status: "datos completos hoy", live: false },
 ];
@@ -29,8 +29,8 @@ export function RightPanel() {
     <aside className="right-panel" aria-label="Panel lateral">
       {/* Chat CTA */}
       <Link href="/chat" className="chat-cta fade-up delay-1">
-        <div className="av" style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg,#5eead4,#22d3ee)", display: "grid", placeItems: "center", flexShrink: 0 }}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="#042f2e" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
+        <div className="av" style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg,#8b5cf6,#6366f1)", display: "grid", placeItems: "center", flexShrink: 0 }}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ede9fe" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
           </svg>
         </div>
