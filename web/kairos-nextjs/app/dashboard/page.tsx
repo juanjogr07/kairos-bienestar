@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { TrendingDown, TrendingUp, Zap, Check, ChevronRight } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { CVWidget } from "@/components/CVWidget";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 const WAVE_HEIGHTS = [22, 35, 48, 38, 55, 72, 68, 80, 90, 76, 85, 92, 96, 88, 72, 60, 54, 48, 40, 34, 28, 22, 18, 14];
@@ -89,6 +90,7 @@ export default function DashboardPage() {
           <span style={{ width: 3, height: 3, borderRadius: "50%", background: "var(--muted)", opacity: 0.5, display: "inline-block" }} />
           <span>Domingo, 25 mayo</span>
         </div>
+        <ThemeToggle />
         <Link href="/chat" className="btn-cta">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="15" height="15">
             <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
