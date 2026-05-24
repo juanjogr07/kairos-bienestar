@@ -22,6 +22,11 @@
       "matches": ["<all_urls>"],
       "js": ["dist/content-scroll.js"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["dist/content-intervention.js"],
+      "run_at": "document_start"
     }
   ],
   "action": {

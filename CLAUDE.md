@@ -73,15 +73,11 @@ El formato de rama incluye la fase de Linear para saber exactamente a qué miles
 ```
 
 ```
-main                              ← producción (nunca commit directo)
-dev                               ← integración de todos los streams
-feat/<rol>/setup/<id>             ← Fase 1: Setup
-feat/<rol>/foundation/<id>        ← Fase 2: Foundation
-feat/<rol>/core/<id>              ← Fase 3: Core
-feat/<rol>/feature/<id>           ← Fase 4: Feature (US-*)
+main                              ← integración de todos los streams (producción)
+exp/ml/exp/<id>                   ← experimentos ML (nunca van directo a main)
+feat/<rol>/<fase>/<id>            ← desarrollo de features (PR a main)
+mig/<num>-<descripcion>           ← migraciones DB (PR a main)
 fix/<rol>/<fase>/<id>             ← bugfixes
-exp/ml/exp/<id>                   ← experimentos ML (nunca van directo a dev)
-mig/<num>                         ← migraciones de DB (Backend 2 Data)
 ```
 
 **Ejemplos reales:**
@@ -97,7 +93,7 @@ feat/api/feature/US-API-001-weekly-usage-endpoint
 fix/api/core/KAI-20-events-batch-cors
 ```
 
-**Flujo obligatorio:** rama propia → PR a `dev` → merge con al menos un review.
+**Flujo obligatorio:** rama propia → PR a `main` → merge con al menos un review.
 
 **Prefijos de commit por stream:**
 ```

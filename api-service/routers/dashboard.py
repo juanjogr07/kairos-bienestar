@@ -24,6 +24,12 @@ class DashboardResponse(BaseModel):
     onboarding_completed: bool
 
 
+class MiniSummaryResponse(BaseModel):
+    today_usage_min: int
+    streak_active: bool
+    last_intervention: Optional[str]
+
+
 class WeeklyUsageDay(BaseModel):
     day: str
     label: str
@@ -146,4 +152,49 @@ async def get_dashboard(user_id: str = Depends(get_current_user)):
         last_gad7_score=last_gad7_score,
         last_survey_date=last_survey_date,
         onboarding_completed=onboarding_completed,
+    )
+
+
+@router.get("/user/mini-summary", response_model=MiniSummaryResponse)
+async def mini_summary(user_id: str = Depends(get_current_user)):
+    """Endpoint ligero para el popup de la extensión Chrome."""
+    today = date.today().isoformat()
+    tomorrow = (date.today() + timedelta(days=1)).isoformat()
+
+    events_res = (
+        supabase.table("usage_events")
+        .select("duration_seconds")
+        .eq("user_id", user_id)
+        .gte("timestamp", today)
+        .lt("timestamp", tomorrow)
+        .execute()
+    )
+    today_usage_min = sum(e["duration_seconds"] for e in (events_res.data or [])) // 60
+
+    streaks_res = (
+        supabase.table("streaks")
+        .select("current_streak, last_completion")
+        .eq("user_id", user_id)
+        .gt("current_streak", 0)
+        .limit(1)
+        .execute()
+    )
+    streak_active = bool(streaks_res.data)
+
+    intervention_res = (
+        supabase.table("intervention_log")
+        .select("shown_at")
+        .eq("user_id", user_id)
+        .order("shown_at", desc=True)
+        .limit(1)
+        .execute()
+    )
+    last_intervention = (
+        intervention_res.data[0]["shown_at"][:10] if intervention_res.data else None
+    )
+
+    return MiniSummaryResponse(
+        today_usage_min=today_usage_min,
+        streak_active=streak_active,
+        last_intervention=last_intervention,
     )

@@ -11,10 +11,11 @@ export interface AgentResponse {
   suggested_habit: string | null
 }
 
-async function getBearerToken(): Promise<string | null> {
+async function getBearerToken(): Promise<string> {
   const supabase = createClient()
   const { data: { session } } = await supabase.auth.getSession()
-  return session?.access_token ?? null
+  if (!session) throw new Error("No session")
+  return session.access_token
 }
 
 export async function sendAgentMessage(message: string): Promise<AgentResponse> {
@@ -28,7 +29,7 @@ export async function sendAgentMessage(message: string): Promise<AgentResponse> 
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ message }),
   })
@@ -50,7 +51,7 @@ export async function getWeeklyReport(): Promise<AgentResponse> {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ trigger: "weekly_report" }),
   })
@@ -72,11 +73,42 @@ export async function getAgentHistory(): Promise<HistoryMessage[]> {
   if (USE_MOCK) return [];
   const token = await getBearerToken();
   const res = await fetch(`${AGENT_URL}/api/v1/agent/history?limit=20`, {
-    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) return [];
   const data = await res.json();
   return data.messages ?? [];
+}
+
+export interface ProgressSummary {
+  user_phase: 1 | 2 | 3;
+  phase_label: string;
+  days_active: number;
+  current_streak: number;
+  longest_streak: number;
+  streak_paused: boolean;
+  days_since_active: number;
+  today_log: Record<string, unknown>;
+  usage_14d: {
+    today_minutes: number;
+    avg_daily_minutes: number;
+    top_domains: { domain: string; minutes: number }[];
+    days_with_data: number;
+  };
+}
+
+export async function getProgressSummary(): Promise<ProgressSummary | null> {
+  if (USE_MOCK) return null;
+  try {
+    const token = await getBearerToken();
+    const res = await fetch(`${AGENT_URL}/api/v1/progress/summary`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
 }
 
 export async function addSuggestedHabit(habitName: string): Promise<void> {

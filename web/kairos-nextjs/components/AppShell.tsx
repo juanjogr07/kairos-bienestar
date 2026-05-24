@@ -1,12 +1,45 @@
-import { BottomNav } from "./BottomNav";
+"use client";
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+import { AgentSidebar } from "./AgentSidebar";
+import { RightPanel } from "./RightPanel";
+import { BottomNav } from "./BottomNav";
+import { CursorAurora } from "./CursorAurora";
+
+interface AppShellProps {
+  children: React.ReactNode;
+  showRight?: boolean;
+}
+
+export function AppShell({ children, showRight = true }: AppShellProps) {
   return (
-    <div className="min-h-screen bg-bg-deep">
+    <>
+      {/* Cursor aurora (desktop only) */}
+      <CursorAurora />
+
+      {/* Ambient background layers */}
+      <div className="ambient" aria-hidden="true">
+        <div className="blob3" />
+        <div className="grid-pattern" />
+        <div className="stars" />
+        <div className="beam" />
+        <div className="beam b2" />
+      </div>
+
+      <div className={`app-shell${showRight ? "" : " no-right"}`}>
+        {/* Agent sidebar — hidden on mobile */}
+        <AgentSidebar />
+
+        {/* Main content */}
+        <main className="main-content">
+          {children}
+        </main>
+
+        {/* Right panel — hidden below 1200px */}
+        {showRight && <RightPanel />}
+      </div>
+
+      {/* Bottom nav — visible on mobile only */}
       <BottomNav />
-      <main className="page-enter mx-auto max-w-2xl px-5 pb-28 pt-6 md:ml-20 md:max-w-3xl md:px-8 md:pb-12">
-        {children}
-      </main>
-    </div>
+    </>
   );
 }

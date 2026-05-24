@@ -4,6 +4,7 @@ module.exports = {
   entry: {
     background: "./src/background/index.ts",
     "content-scroll": "./src/content-scripts/scroll-detector.ts",
+    "content-intervention": "./src/content-scripts/intervention.ts",
     popup: "./src/popup/index.tsx",
   },
   output: {

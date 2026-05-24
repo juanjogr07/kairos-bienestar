@@ -1,8 +1,10 @@
 import json
+from datetime import datetime, timezone
 from openai import OpenAI, APIError, AuthenticationError
 from fastapi import HTTPException
 from config import settings
 from triage.tree import run_triage
+from triage.crisis_escalation import CRISIS_RESPONSE as _CRISIS_RESPONSE
 from agent.tools.get_usage_summary import get_usage_summary
 from agent.tools.get_survey_scores import get_survey_scores
 from agent.tools.get_ml_scores import get_ml_scores
@@ -10,13 +12,87 @@ from agent.tools.get_anomaly_flags import get_anomaly_flags
 from agent.tools.get_forecast import get_forecast
 from agent.tools.search_playbooks import search_playbooks
 from agent import memory as mem
+from agent.user_context import UserContext
+from agent.daily_log import read_today_log, upsert_daily_log
+from agent.specialists.morning_agent import MorningAgent
+from agent.specialists.mood_agent import MoodAgent, CRISIS_KEYWORDS
+from agent.specialists.sleep_agent import SleepAgent
+from agent.specialists.focus_agent import FocusAgent
+from agent.specialists.screen_agent import ScreenAgent
+from agent.specialists.fuel_agent import FuelAgent
+
+_SPECIALISTS = [MoodAgent(), FuelAgent(), SleepAgent(), FocusAgent(), ScreenAgent(), MorningAgent()]
+
+
+def _current_hour() -> int:
+    return datetime.now(timezone.utc).hour
+
+
+def _build_user_context(user_id: str) -> UserContext:
+    """Assemble UserContext from Supabase in one pass."""
+    surveys = get_survey_scores(user_id)
+    log = read_today_log(user_id)
+    hour = _current_hour()
+
+    days_active = 0
+    days_since_active = 0
+    current_streak = 0
+    try:
+        from database import supabase
+        from datetime import date
+        res = (supabase.table("streaks")
+               .select("current_streak,longest_streak,last_completion")
+               .eq("user_id", user_id)
+               .limit(1).execute())
+        if res.data:
+            row = res.data[0]
+            current_streak = row.get("current_streak", 0)
+            last = row.get("last_completion")
+            if last:
+                days_since_active = (date.today() - date.fromisoformat(str(last))).days
+                days_active = current_streak + days_since_active
+    except Exception:
+        pass
+
+    return UserContext(
+        user_id=user_id,
+        phq9_baseline=surveys.get("phq9_prev_score"),
+        gad7_baseline=surveys.get("gad7_prev_score"),
+        phq9_current=surveys.get("phq9_score"),
+        gad7_current=surveys.get("gad7_score"),
+        morning_mood=log.get("morning_mood"),
+        sleep_quality=log.get("sleep_quality"),
+        has_event_today=bool(log.get("has_event_today", False)),
+        sleep_hours=log.get("sleep_hours"),
+        screen_hours=log.get("screen_hours"),
+        physical_energy=log.get("physical_energy"),
+        hours_since_meal=log.get("hours_since_meal"),
+        checkin_done=bool(log.get("morning_mood")),
+        nocturnal_ratio=log.get("nocturnal_ratio", 0.0),
+        days_active=days_active,
+        days_since_active=days_since_active,
+        current_streak=current_streak,
+        is_evening=hour >= 21,
+    )
+
+
+def _select_specialist(ctx: UserContext, hour: int):
+    """Return the best specialist for this context, or None to use default."""
+    for specialist in _SPECIALISTS:
+        if specialist.name == "morning":
+            if specialist.should_activate(ctx, hour=hour):
+                return specialist
+        else:
+            if specialist.should_activate(ctx):
+                return specialist
+    return None
 
 client = OpenAI(
     api_key=settings.anthropic_api_key,
     base_url="https://openrouter.ai/api/v1",
 )
 
-MODEL = "anthropic/claude-sonnet-4-5"
+MODEL = "nvidia/nemotron-3-super-120b-a12b:free"
 
 TOOLS = [
     {
@@ -104,14 +180,7 @@ TOOLS = [
 
 HABIT_MARKER = "HÁBITO_SUGERIDO:"
 
-CRISIS_RESPONSE = """Noto que estás atravesando un momento muy difícil.
-Gracias por confiar en mí, y quiero asegurarme de que recibas el apoyo adecuado.
-
-📞 **Línea 106 — Salud mental**
-Gratuita · Confidencial · Disponible 24 horas
-Llama ahora si necesitas hablar con alguien.
-
-Estoy aquí para acompañarte, pero en este momento lo más importante es que te conectes con un profesional."""
+CRISIS_RESPONSE = _CRISIS_RESPONSE
 
 WEEKLY_REPORT_PROMPT = """Genera un reporte semanal de bienestar digital en formato Markdown.
 Usa PRIMERO get_usage_summary (days=7), get_survey_scores y get_ml_scores para recopilar los datos antes de redactar.
@@ -135,28 +204,35 @@ Estructura OBLIGATORIA (incluye exactamente estos encabezados):
 
 Tono: cálido, motivador, sin juicios. Máximo 300 palabras. Habla en español."""
 
-SYSTEM_PROMPT = """Eres Kairós, un copiloto de bienestar digital. Tu rol es ayudar a las personas a entender sus patrones de uso digital y acompañarlas hacia mayor bienestar.
+SYSTEM_PROMPT = """Eres Kairós, un copiloto personal de bienestar. Eres como ese amigo que estudió psicología y tecnología — sabes de lo que hablas, pero nunca lo usas para darte cátedra. Eres cálido, directo, y genuinamente curioso por la persona con quien hablas.
 
-HERRAMIENTAS DISPONIBLES:
-- get_usage_summary: uso digital reciente (minutos, top apps, promedio diario)
-- get_survey_scores: PHQ-9 (ánimo) y GAD-7 (ansiedad) del usuario
-- get_ml_scores: señales ML — doomscrolling, patrón nocturno, fragmentación de atención, perfil de uso (cluster)
-- get_anomaly_flags: días atípicos detectados por modelos de anomalías
-- get_forecast: predicción de uso a 7 días y riesgo de recaída (Prophet)
-- search_playbooks: buscar intervenciones basadas en evidencia (SIEMPRE antes de recomendar)
+Tu propósito es ayudar a entender los patrones de uso digital propios y acompañar hacia mayor bienestar — no como terapeuta, sino como alguien que tiene acceso a los datos y sabe usarlos con cuidado.
 
-REGLAS CRÍTICAS:
-1. NUNCA diagnostiques: no digas "tienes depresión", "tienes ansiedad", "tienes ADHD". Usa palabras como "señales", "patrones", "indicadores".
-2. SIEMPRE usa search_playbooks antes de dar recomendaciones de hábitos o intervenciones.
-3. Si el usuario muestra señales de crisis (phq9 >= 15 o gad7 >= 15), deriva INMEDIATAMENTE: "📞 Línea 106 — Salud mental, gratuita, 24 horas."
-4. Compara siempre contra el historial propio del usuario, nunca contra otros usuarios.
-5. Usa un tono cálido, sin juicios, compasivo.
-6. Respuestas concisas: máximo 3-4 párrafos.
-7. Habla siempre en español.
-8. Cuando menciones scores ML, explica en lenguaje humano qué significan (ej: "pasas mucho tiempo en redes sociales de noche" en vez de "nocturnal_pattern_score = 0.71").
-9. Si sugieres un hábito específico, añade al final de tu respuesta exactamente esta línea:
-HÁBITO_SUGERIDO: <nombre del hábito, máximo 5 palabras>
-Esta línea no la ve el usuario — es solo para el sistema. No la incluyas si no sugieres un hábito concreto."""
+CÓMO ERES:
+- Primero la persona, luego los datos. Antes de soltar información, reconoce cómo está el usuario.
+- Conversacional y natural. Nada de bullet points ni listas a menos que el usuario lo pida.
+- Curioso, no prescriptivo. Preguntas abiertas > consejos no pedidos.
+- Cuando algo preocupa, lo dices claro pero sin drama.
+- Respuestas cortas cuando la situación lo pide. Largura ≠ utilidad.
+- Tono colombiano natural: "¿cómo vas?", "¿qué tal te fue?", "eso está bueno".
+
+LO QUE PUEDES VER (y cuándo usarlo):
+- Uso digital: minutos por app, horario de uso, tendencias — úsalo cuando el usuario pregunte sobre sus patrones.
+- Estado de bienestar (PHQ-9, GAD-7): llámalo "evaluación de bienestar", nunca "test de depresión".
+- Señales ML: fragmentación de atención, patrón nocturno, doomscrolling — tradúcelas siempre a lenguaje humano.
+- Días atípicos: úsalos para contextualizar ("esa semana fue diferente a las demás").
+- Tendencias futuras: solo si el usuario pregunta qué esperar.
+- Playbooks de intervención: búscalos ANTES de recomendar cualquier hábito o cambio.
+
+LÍMITES CLAROS:
+- Jamás digas "tienes depresión/ansiedad/ADHD". Usa "señales", "patrones", "indicadores".
+- Si PHQ-9 ≥ 15 o GAD-7 ≥ 15: "📞 Línea 106 — gratuita, 24 horas. Hablé contigo porque me importa." Sin más análisis.
+- Compara al usuario solo consigo mismo, nunca con otros.
+- Máximo 3-4 párrafos. Si puedes decirlo en menos, mejor.
+- Habla siempre en español.
+
+Si sugieres un hábito concreto, añade al final (solo para el sistema, el usuario no la ve):
+HÁBITO_SUGERIDO: <nombre del hábito, máximo 5 palabras>"""
 
 
 def _execute_tool(tool_name: str, tool_input: dict) -> str:
@@ -183,7 +259,7 @@ def _execute_tool(tool_name: str, tool_input: dict) -> str:
 def chat(user_id: str, message: str) -> dict:
     triage_result = run_triage(user_id)
 
-    # GUARDRAIL — executes before LLM, cannot be bypassed by prompt or history
+    # GUARDRAIL — hard crisis bypass (triage score)
     if triage_result["level"] == "crisis":
         mem.add_message(user_id, "user", message)
         mem.add_message(user_id, "assistant", CRISIS_RESPONSE)
@@ -192,6 +268,24 @@ def chat(user_id: str, message: str) -> dict:
             "playbook_activated": "crisis-escalation",
             "suggested_habit": None,
         }
+
+    # Build UserContext and check crisis keywords in message
+    ctx = _build_user_context(user_id)
+    hour = _current_hour()
+
+    if any(kw in message.lower() for kw in CRISIS_KEYWORDS):
+        mem.add_message(user_id, "user", message)
+        mem.add_message(user_id, "assistant", CRISIS_RESPONSE)
+        return {
+            "reply": CRISIS_RESPONSE,
+            "playbook_activated": "crisis-escalation",
+            "suggested_habit": None,
+        }
+
+    # Select specialist
+    specialist = _select_specialist(ctx, hour)
+    active_system_prompt = specialist.system_prompt(ctx) if specialist else SYSTEM_PROMPT
+    active_tools = specialist.tools if specialist else TOOLS
 
     triage_context = (
         f"\n\nCONTEXTO DE TRIAJE:\n"
@@ -204,7 +298,7 @@ def chat(user_id: str, message: str) -> dict:
     mem.add_message(user_id, "user", message)
 
     messages = [
-        {"role": "system", "content": SYSTEM_PROMPT + triage_context},
+        {"role": "system", "content": active_system_prompt + triage_context},
         *mem.get_history(user_id),
     ]
 
@@ -215,7 +309,7 @@ def chat(user_id: str, message: str) -> dict:
             response = client.chat.completions.create(
                 model=MODEL,
                 max_tokens=1024,
-                tools=TOOLS,
+                tools=active_tools or None,
                 messages=messages,
             )
         except AuthenticationError as exc:
