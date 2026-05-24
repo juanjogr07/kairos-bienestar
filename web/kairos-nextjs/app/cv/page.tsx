@@ -211,7 +211,7 @@ function drawFrame(
 
 // ── Component ────────────────────────────────────────────────────────────────
 export default function CVPage() {
-  const { loading: authLoading } = useRequireAuth();
+  const { checking: authLoading } = useRequireAuth();
   const videoRef    = useRef<HTMLVideoElement>(null);
   const canvasRef   = useRef<HTMLCanvasElement>(null);
   const animRef     = useRef<number>(0);

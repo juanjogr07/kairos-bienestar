@@ -80,6 +80,37 @@ export async function getAgentHistory(): Promise<HistoryMessage[]> {
   return data.messages ?? [];
 }
 
+export interface ProgressSummary {
+  user_phase: 1 | 2 | 3;
+  phase_label: string;
+  days_active: number;
+  current_streak: number;
+  longest_streak: number;
+  streak_paused: boolean;
+  days_since_active: number;
+  today_log: Record<string, unknown>;
+  usage_14d: {
+    today_minutes: number;
+    avg_daily_minutes: number;
+    top_domains: { domain: string; minutes: number }[];
+    days_with_data: number;
+  };
+}
+
+export async function getProgressSummary(): Promise<ProgressSummary | null> {
+  if (USE_MOCK) return null;
+  try {
+    const token = await getBearerToken();
+    const res = await fetch(`${AGENT_URL}/api/v1/progress/summary`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
 export async function addSuggestedHabit(habitName: string): Promise<void> {
   const token = await getBearerToken()
   if (!token) return

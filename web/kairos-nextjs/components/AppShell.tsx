@@ -1,6 +1,6 @@
 "use client";
 
-import { Sidebar } from "./Sidebar";
+import { AgentSidebar } from "./AgentSidebar";
 import { RightPanel } from "./RightPanel";
 import { BottomNav } from "./BottomNav";
 
@@ -22,15 +22,15 @@ export function AppShell({ children, showRight = true }: AppShellProps) {
       </div>
 
       <div className={`app-shell${showRight ? "" : " no-right"}`}>
-        {/* Icon sidebar — hidden on mobile */}
-        <Sidebar />
+        {/* Agent sidebar — hidden on mobile */}
+        <AgentSidebar />
 
         {/* Main content */}
         <main className="main-content">
           {children}
         </main>
 
-        {/* Right panel — hidden below 1100px */}
+        {/* Right panel — hidden below 1200px */}
         {showRight && <RightPanel />}
       </div>
 
